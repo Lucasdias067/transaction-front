@@ -1,3 +1,9 @@
+import { Button } from '@/components/ui/button'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from '@/components/ui/popover'
 import {
   Table,
   TableBody,
@@ -6,24 +12,13 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { transactions } from '../../../utils/transactions'
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  EllipsisVertical,
-  PlusCircleIcon
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from '@/components/ui/popover'
-import { Income } from './addTransactionForm/income'
-import { Expense } from './addTransactionForm/expense'
 import { columns } from '@/utils/columns'
+import { PlusCircleIcon } from 'lucide-react'
+import { transactions } from '../../../utils/transactions'
 import { Actions } from './Actions'
 import { MonthNavigator } from './MonthNavigator'
+import { Expense } from './addTransactionForm/expense'
+import { Income } from './addTransactionForm/income'
 
 export function TransactionsTable() {
   return (
@@ -86,8 +81,7 @@ export function TransactionsTable() {
                       </span>
                       {tx.installmentNumber && (
                         <span className="text-slate-400 text-sm mt-1">
-                          Parcela {tx.installmentNumber}/
-                          {tx.totalInstallments}
+                          Parcela {tx.installmentNumber}/{tx.totalInstallments}
                         </span>
                       )}
                     </div>

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
-export default function Page() {
-  redirect('/transactions')
+export default function RootPage() {
+  redirect('/sign-in')
 }
