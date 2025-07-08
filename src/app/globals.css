@@ -43,24 +43,8 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-img,
-picture,
-svg,
-video {
-  display: block;
-  max-width: 100%;
-}
-
-button, svg {
-  cursor: pointer;
-}
-
-a {
-  text-decoration: none;
-}
-
-ul {
-  list-style-type: none;
+button {
+  @apply cursor-pointer;
 }
 
 :root {

@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { useState } from 'react'
 
 export function MonthNavigator() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -26,27 +26,31 @@ export function MonthNavigator() {
       month: 'long',
       year: 'numeric'
     })
-    .toUpperCase()
+    .replace(/^\w/, c => c.toUpperCase())
 
   return (
-    <div className="py-6 md:px-14 w-full flex gap-4 justify-between text-center text-white font-semibold items-center">
-      <Button
-        variant="default"
-        size="icon"
-        className="size-8"
-        onClick={handlePreviousMonth}
-      >
-        <ChevronLeftIcon />
-      </Button>
-      <div className="w-full">{formattedMonthYear}</div>
-      <Button
-        variant="default"
-        size="icon"
-        className="size-8"
-        onClick={handleNextMonth}
-      >
-        <ChevronRightIcon />
-      </Button>
+    <div className="flex w-full items-center justify-end gap-4">
+      <span className="text-lg font-semibold text-white">
+        {formattedMonthYear}
+      </span>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 bg-transparent border-slate-700/50 text-slate-300 hover:bg-slate-700/50 hover:text-white"
+          onClick={handlePreviousMonth}
+        >
+          <ChevronLeftIcon className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 bg-transparent border-slate-700/50 text-slate-300 hover:bg-slate-700/50 hover:text-white"
+          onClick={handleNextMonth}
+        >
+          <ChevronRightIcon className="h-5 w-5" />
+        </Button>
+      </div>
     </div>
   )
 }

@@ -4,7 +4,7 @@ import {
   totalIncome
 } from '../../../utils/transactions'
 
-export function Sumary() {
+export function SumaryCards() {
   return (
     <div className="max-w-7xl mx-auto mb-8">
       <div className="text-center mb-8">

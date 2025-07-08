@@ -6,53 +6,53 @@ import { Label } from '@/components/ui/label'
 import { api } from '@/lib/axios'
 import { useMutation } from '@tanstack/react-query'
 import { Lock, Mail, User } from 'lucide-react'
-import { useRouter } from 'next/navigation' // Para redirecionar
-import { useState } from 'react' // Para gerenciar o estado dos inputs
-// import { toast } from 'sonner' // Exemplo de biblioteca de notificação
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { Toaster, toast } from 'sonner'
 
 export default function SignUpPage() {
   const router = useRouter()
 
-  // 1. Gerenciar o estado dos inputs
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  // 2. Corrigir o useMutation
+  interface SignUpData {
+    name: string
+    email: string
+    password: string
+  }
+
   const { mutateAsync: signUpFn, isPending } = useMutation({
-    mutationFn: async (data: { name; email; password }) => {
-      // Envia os dados no corpo da requisição POST
-      await api.post('/auth/sign-up', {
+    mutationFn: async (data: SignUpData) => {
+      const response = await api.post('/auth/sign-up', {
         name: data.name,
         email: data.email,
-        password: data.password
+        password: data.password,
+        role: 'USER'
       })
+      return response.data
     },
     onSuccess: () => {
-      // toast.success('Conta criada com sucesso!', {
-      //   description: 'Você será redirecionado para a página de login.'
-      // })
-      router.push('/sign-in') // Redireciona após o sucesso
+      toast.success('Conta criada com sucesso!', {
+        description: 'Você será redirecionado para a página de login.'
+      })
+      router.push('/sign-in')
     },
-    onError: error => {
-      // Exemplo de como tratar o erro vindo do Axios
-      const errorMessage =
-        error.message ||
-        'Ocorreu um erro ao criar a conta. Tente novamente.'
-      // toast.error('Falha ao criar conta', {
-      //   description: errorMessage
-      // })
+    onError: () => {
+      toast.error('Falha ao criar conta', {
+        description: 'Ocorreu um erro ao criar a conta. Tente novamente.',
+        icon: <Lock className="h-5 w-5" />
+      })
     }
   })
 
-  // 3. Criar a função de submissão do formulário
   async function handleSignUp(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault() // Impede o recarregamento da página
-
+    event.preventDefault()
     try {
       await signUpFn({ name, email, password })
     } catch (error) {
-      // O onError do useMutation já vai lidar com o toast de erro
       console.error('Falha no cadastro:', error)
     }
   }
@@ -68,9 +68,7 @@ export default function SignUpPage() {
             </p>
           </div>
 
-          {/* Adiciona o handler onSubmit */}
           <form onSubmit={handleSignUp} className="space-y-6">
-            {/* Campo de Nome */}
             <div className="space-y-2">
               <Label htmlFor="name" className="text-slate-300">
                 Nome Completo
@@ -82,13 +80,12 @@ export default function SignUpPage() {
                   type="text"
                   placeholder="Seu nome completo"
                   value={name}
-                  onChange={e => setName(e.target.value)} // Controla o estado
+                  onChange={e => setName(e.target.value)}
                   className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
             </div>
 
-            {/* Campo de Email */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-slate-300">
                 Email
@@ -100,13 +97,12 @@ export default function SignUpPage() {
                   type="email"
                   placeholder="seuemail@exemplo.com"
                   value={email}
-                  onChange={e => setEmail(e.target.value)} // Controla o estado
+                  onChange={e => setEmail(e.target.value)}
                   className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
             </div>
 
-            {/* Campo de Senha */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-slate-300">
                 Senha
@@ -118,25 +114,46 @@ export default function SignUpPage() {
                   type="password"
                   placeholder="Crie uma senha forte"
                   value={password}
-                  onChange={e => setPassword(e.target.value)} // Controla o estado
+                  onChange={e => setPassword(e.target.value)}
                   className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
             </div>
 
-            {/* Botão de Criar Conta com estado de loading */}
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 backdrop-blur-sm border border-emerald-500/20 rounded-xl p-6 text-white text-base font-semibold hover:border-emerald-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-br cursor-pointer from-emerald-500/20 to-emerald-600/10 backdrop-blur-sm border border-emerald-500/20 rounded-xl p-6 text-white text-base font-semibold hover:border-emerald-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending ? 'Criando conta...' : 'Criar Conta'}
             </Button>
           </form>
 
-          {/* ... */}
+          <div className="text-center mt-6">
+            <p className="text-sm text-slate-400">
+              Tem conta?{' '}
+              <Link
+                href="/sign-in"
+                className="font-medium text-emerald-400 hover:underline"
+              >
+                Faça Login
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
+      <Toaster
+        position="bottom-center"
+        toastOptions={{
+          className: 'bg-slate-800 text-white border border-slate-700',
+          style: {
+            fontSize: '14px',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }
+        }}
+      />
     </div>
   )
 }
