@@ -69,7 +69,7 @@ export function TransactionsTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactionsResults?.data.map((tx, index) => (
+              {transactionsResults && transactionsResults.data.map((tx, index) => (
                 <TableRow
                   key={tx.id}
                   className={`border-b border-slate-700/30 hover:bg-slate-700/20 transition-all duration-200 ${

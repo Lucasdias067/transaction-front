@@ -1,9 +1,9 @@
 'use client'
 
+import { SignUpUser } from '@/api/auth/sign-up-user'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { api } from '@/lib/axios'
 import { useMutation } from '@tanstack/react-query'
 import { Lock, Mail, User } from 'lucide-react'
 import Link from 'next/link'
@@ -18,22 +18,8 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  interface SignUpData {
-    name: string
-    email: string
-    password: string
-  }
-
   const { mutateAsync: signUpFn, isPending } = useMutation({
-    mutationFn: async (data: SignUpData) => {
-      const response = await api.post('/auth/sign-up', {
-        name: data.name,
-        email: data.email,
-        password: data.password,
-        role: 'USER'
-      })
-      return response.data
-    },
+    mutationFn: SignUpUser,
     onSuccess: () => {
       toast.success('Conta criada com sucesso!', {
         description: 'Você será redirecionado para a página de login.'

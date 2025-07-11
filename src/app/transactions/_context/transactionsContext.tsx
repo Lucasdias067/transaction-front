@@ -1,4 +1,4 @@
-import { TransactionsResponse, getTransactions } from '@/api/get-transactions'
+import { TransactionsResponse, getTransactions } from '@/api/transactions/get-transactions'
 import { useQuery } from '@tanstack/react-query'
 import { Options, parseAsString, useQueryState } from 'nuqs'
 import { createContext, useContext } from 'react'
