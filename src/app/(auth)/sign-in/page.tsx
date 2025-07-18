@@ -49,7 +49,7 @@ export default function SignInPage() {
       console.error('Falha inesperada no login:', error)
       toast.error('Ocorreu um erro inesperado.', {
         description: 'Por favor, tente novamente mais tarde.',
-        icon: <AlertTriangle className="h-5 w-5" /> 
+        icon: <AlertTriangle className="h-5 w-5" />
       })
     }
   }

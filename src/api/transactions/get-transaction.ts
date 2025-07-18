@@ -33,7 +33,7 @@ export interface TransactionsResponse {
   }
 }
 
-export async function getTransactions({
+export async function getTransaction({
   date,
   page,
   per_page

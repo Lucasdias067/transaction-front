@@ -1,4 +1,5 @@
 import { api } from '@/lib/axios'
+import { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
 interface Response {
@@ -9,7 +10,7 @@ interface Response {
   access_token: string
 }
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -31,12 +32,7 @@ export const authOptions = {
           const data = response.data
 
           if (data && data.access_token) {
-            return {
-              id: data.id,
-              name: data.name,
-              email: data.email,
-              accessToken: data.access_token
-            }
+            return data
           }
 
           return null
@@ -46,5 +42,30 @@ export const authOptions = {
         }
       }
     })
-  ]
+  ],
+  callbacks: {
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.id = user.id
+        token.role = user.role
+        token.accessToken = user.access_token
+      }
+
+      if (account) {
+        token.accessToken = account.access_token // ou account.id_token dependendo do provider
+      }
+
+      return token
+    },
+
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string
+        session.user.role = token.role as string
+        session.user.accessToken = token.accessToken as string
+      }
+      
+      return session
+    }
+  }
 }

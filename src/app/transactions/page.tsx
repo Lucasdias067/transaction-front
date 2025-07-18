@@ -6,7 +6,9 @@ import { SumaryCards } from './_components/Sumary'
 import { TransactionsTable } from './_components/TransactionsTable'
 
 export default function TransactionsPage() {
-  const { status } = useSession()
+  const { status, data } = useSession()
+
+  console.log(data)
 
   if (status === 'loading') {
     return (

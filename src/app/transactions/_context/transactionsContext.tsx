@@ -1,9 +1,12 @@
-import { getTransactions } from '@/api/transactions/get-transactions'
+import { getCategory } from '@/api/categories/get-category'
+import { getTransaction } from '@/api/transactions/get-transaction'
 import { useQuery } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 import { parseAsString, useQueryState } from 'nuqs'
 import { ReactNode, createContext, useContext } from 'react'
 
 function useTransactions() {
+  const { data } = useSession()
   const [date, setDate] = useQueryState('date', parseAsString)
   const [page, setPage] = useQueryState('page', parseAsString.withDefault('1'))
   const [perPage, setPerPage] = useQueryState(
@@ -12,14 +15,22 @@ function useTransactions() {
   )
 
   const { data: transactionsResults } = useQuery({
-    queryKey: ['transactions', { date, page, perPage }], 
+    queryKey: ['transactions', { date, page, perPage }],
     queryFn: () =>
-      getTransactions({
+      getTransaction({
         date,
         page,
         per_page: perPage
       })
   })
+
+  const { data: CategoriesResults } = useQuery({
+    queryKey: ['category'],
+    queryFn: () => getCategory(),
+    enabled: !!data?.user.accessToken
+  })
+
+  console.log(CategoriesResults)
 
   return {
     date,
