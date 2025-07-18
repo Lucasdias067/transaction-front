@@ -1,32 +1,9 @@
-import { TransactionsResponse, getTransactions } from '@/api/transactions/get-transactions'
+import { getTransactions } from '@/api/transactions/get-transactions'
 import { useQuery } from '@tanstack/react-query'
-import { Options, parseAsString, useQueryState } from 'nuqs'
-import { createContext, useContext } from 'react'
+import { parseAsString, useQueryState } from 'nuqs'
+import { ReactNode, createContext, useContext } from 'react'
 
-type Children = { children: React.ReactNode }
-
-interface TransactionsData {
-  date: string | null
-  setDate: (
-    value: string | ((old: string | null) => string | null) | null,
-    options?: Options
-  ) => Promise<URLSearchParams>
-  page: string | null
-  setPage: (
-    value: string | ((old: string | null) => string | null) | null,
-    options?: Options
-  ) => Promise<URLSearchParams>
-  perPage: string | null
-  setPerPage: (
-    value: string | ((old: string | null) => string | null) | null,
-    options?: Options
-  ) => Promise<URLSearchParams>
-  transactionsResults: TransactionsResponse | undefined
-}
-
-const TransactionsContext = createContext({} as TransactionsData)
-
-export function TransactionsProvider({ children }: Children) {
+function useTransactions() {
   const [date, setDate] = useQueryState('date', parseAsString)
   const [page, setPage] = useQueryState('page', parseAsString.withDefault('1'))
   const [perPage, setPerPage] = useQueryState(
@@ -35,7 +12,7 @@ export function TransactionsProvider({ children }: Children) {
   )
 
   const { data: transactionsResults } = useQuery({
-    queryKey: ['transactions', { date, page, per_page: perPage }],
+    queryKey: ['transactions', { date, page, perPage }], 
     queryFn: () =>
       getTransactions({
         date,
@@ -44,18 +21,26 @@ export function TransactionsProvider({ children }: Children) {
       })
   })
 
+  return {
+    date,
+    setDate,
+    page,
+    setPage,
+    perPage,
+    setPerPage,
+    transactionsResults
+  }
+}
+
+type TransactionsContextType = ReturnType<typeof useTransactions>
+
+const TransactionsContext = createContext<TransactionsContextType | null>(null)
+
+export function TransactionsProvider({ children }: { children: ReactNode }) {
+  const transactions = useTransactions()
+
   return (
-    <TransactionsContext.Provider
-      value={{
-        date,
-        setDate,
-        page,
-        setPage,
-        perPage,
-        setPerPage,
-        transactionsResults
-      }}
-    >
+    <TransactionsContext.Provider value={transactions}>
       {children}
     </TransactionsContext.Provider>
   )
@@ -63,6 +48,12 @@ export function TransactionsProvider({ children }: Children) {
 
 export function useTransactionsContext() {
   const context = useContext(TransactionsContext)
+
+  if (!context) {
+    throw new Error(
+      'useTransactionsContext must be used within a TransactionsProvider'
+    )
+  }
 
   return context
 }
