@@ -1,4 +1,10 @@
 import {
+  ArrowDownNarrowWide,
+  ArrowUpNarrowWide,
+  TrendingDown,
+  TrendingUp
+} from 'lucide-react'
+import {
   balance,
   totalExpenses,
   totalIncome
@@ -30,7 +36,7 @@ export function SumaryCards() {
               </p>
             </div>
             <div className="h-12 w-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-              <span className="text-emerald-400 text-xl">↗</span>
+              <TrendingUp className="text-emerald-400 text-xl" />
             </div>
           </div>
         </div>
@@ -49,7 +55,7 @@ export function SumaryCards() {
               </p>
             </div>
             <div className="h-12 w-12 bg-red-500/20 rounded-xl flex items-center justify-center">
-              <span className="text-red-400 text-xl">↙</span>
+              <TrendingDown className="text-red-400 text-xl" />
             </div>
           </div>
         </div>
@@ -62,7 +68,7 @@ export function SumaryCards() {
               <p
                 className={`${balance >= 0 ? 'text-blue-400' : 'text-orange-400'} text-sm font-medium uppercase tracking-wide`}
               >
-                Balanço Mensal 
+                Balanço Mensal
               </p>
               <p className="text-white text-2xl font-bold">
                 R${' '}
@@ -77,7 +83,7 @@ export function SumaryCards() {
               <span
                 className={`${balance >= 0 ? 'text-blue-400' : 'text-orange-400'} text-xl`}
               >
-                {balance >= 0 ? '=' : '⚠'}
+                {balance >= 0 ? <ArrowUpNarrowWide /> : <ArrowDownNarrowWide />}
               </span>
             </div>
           </div>
