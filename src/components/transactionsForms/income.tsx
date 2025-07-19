@@ -1,3 +1,4 @@
+import { useTransactionsContext } from '@/app/transactions/_context/transactionsContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,6 +20,9 @@ import {
   SheetTrigger
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
+import { api } from '@/lib/axios'
+import { queryClient } from '@/lib/use-query'
+import { useMutation } from '@tanstack/react-query'
 import { PlusCircle } from 'lucide-react'
 import { useState } from 'react'
 import CalendarForm from './components/CalendarForm'
@@ -35,14 +39,26 @@ export function Income() {
   const [isRecurring, setIsRecurring] = useState(false)
   const [recurrences, setRecurrences] = useState('3')
 
-  const [categories, setCategories] = useState([
-    { value: 'salary', label: 'Salário' },
-    { value: 'investments', label: 'Investimentos' },
-    { value: 'freelance', label: 'Freelance' },
-    { value: 'gift', label: 'Presente' },
-    { value: 'sales', label: 'Vendas' },
-    { value: 'others', label: 'Outros' }
-  ])
+  const { CategoriesResults } = useTransactionsContext()
+
+  const categories = CategoriesResults?.data.filter(category => {
+    return category.type === 'INCOME'
+  })
+
+  const { mutate: categoryMutateFn } = useMutation({
+    mutationKey: ['create-category'],
+    mutationFn: async (name: string) => {
+      return await api.post('/categories', {
+        name,
+        type: 'INCOME'
+      })
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ['category'] })
+      setNewCategoryName('')
+      setShowAddCategory(false)
+    }
+  })
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -77,19 +93,6 @@ export function Income() {
         date: date.toISOString()
       }
       console.log('Nova Receita:', newIncome)
-    }
-  }
-
-  function handleAddCategory() {
-    if (newCategoryName.trim()) {
-      const newValue = newCategoryName.toLowerCase().replace(/\s+/g, '-')
-      setCategories([
-        ...categories,
-        { value: newValue, label: newCategoryName }
-      ])
-      setCategory(newValue)
-      setNewCategoryName('')
-      setShowAddCategory(false)
     }
   }
 
@@ -188,13 +191,13 @@ export function Income() {
                   <SelectValue placeholder="Selecione a categoria" />
                 </SelectTrigger>
                 <SelectContent className={formSelectContentClasses}>
-                  {categories.map(cat => (
+                  {categories?.map(cat => (
                     <SelectItem
-                      key={cat.value}
-                      value={cat.value}
+                      key={cat.id}
+                      value={cat.id}
                       className="cursor-pointer hover:!bg-emerald-500/20"
                     >
-                      {cat.label}
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -222,7 +225,7 @@ export function Income() {
                   type="button"
                   variant="outline"
                   className="bg-emerald-500/20 border-emerald-500/50 hover:bg-emerald-500/30 text-emerald-300 hover:text-emerald-300"
-                  onClick={handleAddCategory}
+                  onClick={() => categoryMutateFn(newCategoryName)}
                 >
                   Adicionar
                 </Button>

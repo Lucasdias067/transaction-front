@@ -1,3 +1,4 @@
+import { useTransactionsContext } from '@/app/transactions/_context/transactionsContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,6 +21,9 @@ import {
   SheetTrigger
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
+import { api } from '@/lib/axios'
+import { queryClient } from '@/lib/use-query'
+import { useMutation } from '@tanstack/react-query'
 import { PlusCircle } from 'lucide-react'
 import { useState } from 'react'
 import CalendarForm from './components/CalendarForm'
@@ -40,16 +44,26 @@ export function Expense() {
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
 
-  const [categories, setCategories] = useState([
-    { value: 'food', label: 'Alimentação' },
-    { value: 'transport', label: 'Transporte' },
-    { value: 'housing', label: 'Moradia' },
-    { value: 'entertainment', label: 'Lazer' },
-    { value: 'utilities', label: 'Contas' },
-    { value: 'health', label: 'Saúde' },
-    { value: 'education', label: 'Educação' },
-    { value: 'others', label: 'Outros' }
-  ])
+  const { CategoriesResults } = useTransactionsContext()
+
+  const categories = CategoriesResults?.data.filter(category => {
+    return category.type === 'EXPENSE'
+  })
+
+  const { mutate: categoryMutateFn } = useMutation({
+    mutationKey: ['create-category'],
+    mutationFn: async (name: string) => {
+      return await api.post('/categories', {
+        name,
+        type: 'EXPENSE'
+      })
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ['category'] })
+      setNewCategoryName('')
+      setShowAddCategory(false)
+    }
+  })
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -91,19 +105,6 @@ export function Expense() {
     }
 
     // Lógica para fechar o sheet e exibir um toast de sucesso
-  }
-
-  function handleAddCategory() {
-    if (newCategoryName.trim()) {
-      const newValue = newCategoryName.toLowerCase().replace(/\s+/g, '-')
-      setCategories([
-        ...categories,
-        { value: newValue, label: newCategoryName }
-      ])
-      setCategory(newValue)
-      setNewCategoryName('')
-      setShowAddCategory(false)
-    }
   }
 
   const formElementClasses =
@@ -240,13 +241,13 @@ export function Expense() {
                   <SelectValue placeholder="Selecione a categoria" />
                 </SelectTrigger>
                 <SelectContent className={formSelectContentClasses}>
-                  {categories.map(cat => (
+                  {categories?.map(cat => (
                     <SelectItem
-                      key={cat.value}
-                      value={cat.value}
+                      key={cat.id}
+                      value={cat.id}
                       className="cursor-pointer hover:!bg-red-500/20"
                     >
-                      {cat.label}
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -274,7 +275,7 @@ export function Expense() {
                   type="button"
                   variant="outline"
                   className="bg-red-500/20 border-red-500/50 hover:bg-red-500/30 text-red-300 hover:text-red-300"
-                  onClick={handleAddCategory}
+                  onClick={() => categoryMutateFn(newCategoryName)}
                 >
                   Adicionar
                 </Button>

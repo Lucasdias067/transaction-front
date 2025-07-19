@@ -30,8 +30,6 @@ function useTransactions() {
     enabled: !!data?.user.accessToken
   })
 
-  console.log(CategoriesResults)
-
   return {
     date,
     setDate,
@@ -39,7 +37,8 @@ function useTransactions() {
     setPage,
     perPage,
     setPerPage,
-    transactionsResults
+    transactionsResults,
+    CategoriesResults
   }
 }
 

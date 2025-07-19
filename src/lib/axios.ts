@@ -7,11 +7,12 @@ export const api = axios.create({
 
 api.interceptors.request.use(async config => {
   const session = await getSession()
-  console.log('Sessão carregada:', session)
 
   const token = session?.user.accessToken
-  console.log('Enviando token:', token)
 
-  config.headers.Authorization = `Bearer ${token}`
+  if (token) {
+    config.headers.Authorization = token
+  }
+
   return config
 })
