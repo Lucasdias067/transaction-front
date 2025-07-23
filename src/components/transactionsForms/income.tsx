@@ -1,3 +1,5 @@
+import { createCategory } from '@/api/categories/create-category'
+import { createTransaction } from '@/api/transactions/create-transaction'
 import { useTransactionsContext } from '@/app/transactions/_context/transactionsContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,44 +22,92 @@ import {
   SheetTrigger
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
-import { api } from '@/lib/axios'
 import { queryClient } from '@/lib/use-query'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { PlusCircle } from 'lucide-react'
 import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { Toaster, toast } from 'sonner'
+import z from 'zod'
 import CalendarForm from './components/CalendarForm'
-import { createTransaction } from '@/api/transactions/create-transaction'
+import { formatCurrency, validateRecurrences } from './utils/utils'
+
+const incomeTransactionSchema = z.object({
+  title: z.string().min(2, 'Título deve ter pelo menos 2 caracteres').max(100),
+  amount: z
+    .string()
+    .transform(val => {
+      const numbers = val.replace(/\D/g, '')
+      return numbers ? parseInt(numbers) / 100 : 0
+    })
+    .refine(val => val > 0, { message: 'Valor deve ser maior que zero' })
+    .transform(val => val.toString()),
+  category: z.string().min(1, 'Selecione uma categoria'),
+  status: z.enum(['PENDING', 'RECEIVED'])
+})
+
+type IncomeTransactionFormData = z.infer<typeof incomeTransactionSchema>
+
+// Constantes
+const FORM_CLASSES = {
+  input:
+    'bg-slate-900/50 border-slate-700/50 focus:border-emerald-500/80 focus-visible:ring-emerald-500/50',
+  select: 'bg-slate-800/80 backdrop-blur-lg border-slate-700/50 text-white'
+}
+
+const TOAST_CONFIG = {
+  position: 'bottom-left' as const,
+  style: { background: '#1e293b', color: '#fff' }
+}
 
 export function Income() {
-  const [title, setTitle] = useState('')
-  const [amount, setAmount] = useState('')
-  const [category, setCategory] = useState('')
-  const [status, setStatus] = useState('')
-  const [date, setDate] = useState<Date | undefined>(new Date())
+  // Estados
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
-
+  const [date, setDate] = useState(new Date())
   const [isRecurring, setIsRecurring] = useState(false)
-  const [recurrences, setRecurrences] = useState('3')
+  const [recurrences, setRecurrences] = useState('2')
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
 
+  // Hooks
   const { CategoriesResults } = useTransactionsContext()
-
-  const categories = CategoriesResults?.data.filter(category => {
-    return category.type === 'INCOME'
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    formState: { errors, isValid }
+  } = useForm<IncomeTransactionFormData>({
+    resolver: zodResolver(incomeTransactionSchema)
   })
 
+  // Dados derivados
+  const categories = CategoriesResults?.data.filter(
+    category => category.type === 'INCOME'
+  )
+  const isRecurrenceValid = validateRecurrences(recurrences)
+
+  // Reset form function
+  const resetForm = () => {
+    reset()
+    setDate(new Date())
+    setIsRecurring(false)
+    setRecurrences('2')
+    setNewCategoryName('')
+    setShowAddCategory(false)
+    setIsSheetOpen(false)
+  }
+
+  // Mutations
   const { mutate: categoryMutateFn } = useMutation({
     mutationKey: ['create-category'],
-    mutationFn: async (name: string) => {
-      return await api.post('/categories', {
-        name,
-        type: 'INCOME'
-      })
-    },
+    mutationFn: createCategory,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ['category'] })
       setNewCategoryName('')
       setShowAddCategory(false)
+      toast.success('Categoria criada com sucesso!', TOAST_CONFIG)
     }
   })
 
@@ -66,56 +116,27 @@ export function Income() {
     mutationFn: createTransaction,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      setTitle('')
-      setAmount('')
-      setCategory('')
-      setStatus('')
+      resetForm()
+      toast.success('Receita criada com sucesso!', TOAST_CONFIG)
     }
   })
-  
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!date) return
 
-    if (isRecurring) {
-      const incomeAmount = parseFloat(amount)
-      const numRecurrences = parseInt(recurrences, 10)
-      const newIncomes = []
-
-      for (let i = 0; i < numRecurrences; i++) {
-        const recurringDate = new Date(date)
-        recurringDate.setMonth(recurringDate.getMonth() + i)
-
-        newIncomes.push({
-          title: `${title} (${i + 1}/${numRecurrences})`,
-          amount: incomeAmount,
-          type: 'INCOME',
-          category,
-          status,
-          date: recurringDate.toISOString()
-        })
-      }
-      console.log('Novas Receitas Recorrentes:', newIncomes)
-    } else {
-      const newIncome = {
-        title,
-        amount: parseFloat(amount),
-        type: 'INCOME',
-        category,
-        status,
-        date: date.toISOString()
-      }
-      console.log('Nova Receita:', newIncome)
-    }
+  // Handlers
+  function handleSubmitForm(data: IncomeTransactionFormData) {
+    TransactionMutateFn({
+      title: data.title,
+      amount: parseFloat(data.amount),
+      type: 'INCOME',
+      categoryId: data.category,
+      status: data.status,
+      installmentNumber: 1,
+      totalInstallments: isRecurring ? parseInt(recurrences) : 1,
+      effectiveDate: date
+    })
   }
 
-  const formElementClasses =
-    'bg-slate-900/50 border-slate-700/50 focus:border-emerald-500/80 focus-visible:ring-emerald-500/50'
-  const formSelectContentClasses =
-    'bg-slate-800/80 backdrop-blur-lg border-slate-700/50 text-white'
-
   return (
-    <Sheet>
+    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
       <SheetTrigger asChild>
         <div className="text-left hover:bg-emerald-500/20 cursor-pointer rounded-lg p-3 transition-colors duration-200">
           <div className="font-medium text-emerald-400">Adicionar Receita</div>
@@ -135,7 +156,7 @@ export function Income() {
         </SheetHeader>
         <form
           id="income-form"
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(handleSubmitForm)}
           className="flex-1 overflow-y-auto p-6 space-y-6"
         >
           <div className="grid gap-2">
@@ -143,26 +164,36 @@ export function Income() {
             <Input
               id="transaction-name"
               placeholder="Ex: Salário mensal"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              className={formElementClasses}
-              required
+              className={FORM_CLASSES.input}
+              aria-invalid={!!errors.title}
+              {...register('title')}
             />
+            {errors.title && (
+              <p className="text-red-500 text-sm">{errors.title.message}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="amount">Valor</Label>
-            <Input
-              id="amount"
-              type="number"
-              placeholder="R$ 0,00"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-              className={formElementClasses}
-              step="0.01"
-              min="0"
-              required
+            <Controller
+              name="amount"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input
+                  id="amount"
+                  type="text"
+                  placeholder="R$ 0,00"
+                  className={FORM_CLASSES.input}
+                  value={formatCurrency(String(field.value || ''))}
+                  onChange={e => field.onChange(e.target.value)}
+                  aria-invalid={!!errors.amount}
+                />
+              )}
             />
+            {errors.amount && (
+              <p className="text-red-500 text-sm">{errors.amount.message}</p>
+            )}
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-slate-700/50 p-3">
@@ -189,32 +220,50 @@ export function Income() {
                 placeholder="Ex: 12"
                 value={recurrences}
                 onChange={e => setRecurrences(e.target.value)}
-                className={formElementClasses}
+                className={FORM_CLASSES.input}
                 min="2"
+                max="12"
                 required={isRecurring}
               />
+              {isRecurring && !isRecurrenceValid && (
+                <p className="text-red-500 text-sm">
+                  Recorrência deve ser entre 2 e 12 meses
+                </p>
+              )}
             </div>
           )}
 
           <div className="grid gap-2">
             <Label htmlFor="category">Categoria</Label>
             <div className="flex items-center gap-3">
-              <Select value={category} onValueChange={setCategory} required>
-                <SelectTrigger id="category" className={formElementClasses}>
-                  <SelectValue placeholder="Selecione a categoria" />
-                </SelectTrigger>
-                <SelectContent className={formSelectContentClasses}>
-                  {categories?.map(cat => (
-                    <SelectItem
-                      key={cat.id}
-                      value={cat.id}
-                      className="cursor-pointer hover:!bg-emerald-500/20"
-                    >
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="category"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="category" className={FORM_CLASSES.input}>
+                      <SelectValue placeholder="Selecione a categoria" />
+                    </SelectTrigger>
+                    <SelectContent className={FORM_CLASSES.select}>
+                      {categories?.map(cat => (
+                        <SelectItem
+                          key={cat.id}
+                          value={cat.id}
+                          className="cursor-pointer hover:!bg-emerald-500/20"
+                        >
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.category && (
+                <p className="text-red-500 text-sm">
+                  {errors.category.message}
+                </p>
+              )}
               <Button
                 type="button"
                 size="sm"
@@ -232,13 +281,15 @@ export function Income() {
                   placeholder="Nome da nova categoria"
                   value={newCategoryName}
                   onChange={e => setNewCategoryName(e.target.value)}
-                  className={formElementClasses}
+                  className={FORM_CLASSES.input}
                 />
                 <Button
                   type="button"
                   variant="outline"
                   className="bg-emerald-500/20 border-emerald-500/50 hover:bg-emerald-500/30 text-emerald-300 hover:text-emerald-300"
-                  onClick={() => categoryMutateFn(newCategoryName)}
+                  onClick={() =>
+                    categoryMutateFn({ name: newCategoryName, type: 'INCOME' })
+                  }
                 >
                   Adicionar
                 </Button>
@@ -248,25 +299,35 @@ export function Income() {
 
           <div className="grid gap-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={setStatus} required>
-              <SelectTrigger id="status" className={formElementClasses}>
-                <SelectValue placeholder="Selecione o status" />
-              </SelectTrigger>
-              <SelectContent className={formSelectContentClasses}>
-                <SelectItem
-                  value="RECEIVED"
-                  className="cursor-pointer hover:!bg-emerald-500/20"
-                >
-                  Recebido
-                </SelectItem>
-                <SelectItem
-                  value="PENDING"
-                  className="cursor-pointer hover:!bg-emerald-500/20"
-                >
-                  Pendente
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <Controller
+              name="status"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger id="status" className={FORM_CLASSES.input}>
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                  <SelectContent className={FORM_CLASSES.select}>
+                    <SelectItem
+                      value="RECEIVED"
+                      className="cursor-pointer hover:!bg-emerald-500/20"
+                    >
+                      Recebido
+                    </SelectItem>
+                    <SelectItem
+                      value="PENDING"
+                      className="cursor-pointer hover:!bg-emerald-500/20"
+                    >
+                      Pendente
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.status && (
+              <p className="text-red-500 text-sm">{errors.status.message}</p>
+            )}
           </div>
 
           <CalendarForm date={date} setDate={setDate} />
@@ -285,12 +346,14 @@ export function Income() {
           <Button
             type="submit"
             form="income-form"
+            disabled={!isValid}
             className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             Salvar Receita
           </Button>
         </SheetFooter>
       </SheetContent>
+      <Toaster {...TOAST_CONFIG} />
     </Sheet>
   )
 }

@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useTransactionsContext } from '../_context/transactionsContext'
 
 export function MonthNavigator() {
-  const [currentDate, setCurrentDate] = useState(new Date())
+  const { date, setDate } = useTransactionsContext()
 
   const handlePreviousMonth = () => {
-    setCurrentDate(prevDate => {
+    setDate(prevDate => {
       const newDate = new Date(prevDate)
       newDate.setMonth(newDate.getMonth() - 1)
       return newDate
@@ -14,14 +14,14 @@ export function MonthNavigator() {
   }
 
   const handleNextMonth = () => {
-    setCurrentDate(prevDate => {
+    setDate(prevDate => {
       const newDate = new Date(prevDate)
       newDate.setMonth(newDate.getMonth() + 1)
       return newDate
     })
   }
 
-  const formattedMonthYear = currentDate
+  const formattedMonthYear = date
     .toLocaleDateString('pt-BR', {
       month: 'long',
       year: 'numeric'
