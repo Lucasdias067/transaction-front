@@ -4,13 +4,15 @@ import {
   TrendingDown,
   TrendingUp
 } from 'lucide-react'
-import {
-  balance,
-  totalExpenses,
-  totalIncome
-} from '../../../utils/transactions'
+import { useTransactionsContext } from '../_context/transactionsContext'
 
 export function SumaryCards() {
+  const { transactionsResults } = useTransactionsContext()
+
+  const balance = 1000
+  const totalExpenses = 1000
+  const totalIncome = 5000
+
   return (
     <div className="max-w-7xl mx-auto mb-8">
       <div className="text-center mb-8">

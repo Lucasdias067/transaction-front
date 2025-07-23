@@ -1,8 +1,4 @@
 import { api } from '@/lib/axios'
-
-type TransactionType = 'INCOME' | 'EXPENSE'
-type TransactionStatus = 'PENDING' | 'PAID' | 'RECEIVED'
-
 export interface TransactionsQuery {
   page?: string | null
   per_page?: string | null

@@ -4,21 +4,56 @@ import { SignUpUser } from '@/api/auth/sign-up-user'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { Lock, Mail, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { Toaster, toast } from 'sonner'
+import { z } from 'zod'
+
+const signUpSchema = z.object({
+  name: z
+    .string()
+    .min(3, { message: 'O nome precisa ter no mínimo 3 caracteres.' }),
+  email: z.email({ message: 'Por favor, insira um e-mail válido.' }),
+  password: z.string().refine(
+    password => {
+      const hasUpperCase = /[A-Z]/.test(password)
+      const hasLowerCase = /[a-z]/.test(password)
+      const hasNumber = /\d/.test(password)
+      const hasSymbol = /[^A-Za-z0-9]/.test(password)
+
+      return (
+        password.length >= 8 &&
+        hasUpperCase &&
+        hasLowerCase &&
+        hasNumber &&
+        hasSymbol
+      )
+    },
+    {
+      message:
+        'Senha deve conter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e símbolo'
+    }
+  )
+})
+
+type SignUpSchema = z.infer<typeof signUpSchema>
 
 export default function SignUpPage() {
   const router = useRouter()
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting }
+  } = useForm<SignUpSchema>({
+    resolver: zodResolver(signUpSchema)
+  })
 
-  const { mutateAsync: signUpFn, isPending } = useMutation({
+  const { mutateAsync: signUpFn } = useMutation({
     mutationFn: SignUpUser,
     onSuccess: () => {
       toast.success('Conta criada com sucesso!', {
@@ -26,18 +61,18 @@ export default function SignUpPage() {
       })
       router.push('/sign-in')
     },
-    onError: () => {
+    onError: error => {
       toast.error('Falha ao criar conta', {
-        description: 'Ocorreu um erro ao criar a conta. Tente novamente.',
-        icon: <Lock className="h-5 w-5" />
+        description:
+          error.message || 'Ocorreu um erro ao criar a conta. Tente novamente.',
+        icon: <Lock className="h-4 w-4" />
       })
     }
   })
 
-  async function handleSignUp(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function handleSignUp(data: SignUpSchema) {
     try {
-      await signUpFn({ name, email, password })
+      await signUpFn(data)
     } catch (error) {
       console.error('Falha no cadastro:', error)
     }
@@ -54,22 +89,26 @@ export default function SignUpPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSignUp} className="space-y-6">
+          <form onSubmit={handleSubmit(handleSignUp)} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-slate-300">
                 Nome Completo
               </Label>
               <div className="relative flex items-center">
-                <User className="absolute left-3 h-5 w-5 text-slate-400" />
+                <User className="absolute left-3 h-4 w-4 text-slate-400" />
                 <Input
                   id="name"
                   type="text"
                   placeholder="Seu nome completo"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
                   className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
+                  {...register('name')}
                 />
               </div>
+              {errors.name && (
+                <p className="text-sm text-rose-500 mt-1">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -77,16 +116,20 @@ export default function SignUpPage() {
                 Email
               </Label>
               <div className="relative flex items-center">
-                <Mail className="absolute left-3 h-5 w-5 text-slate-400" />
+                <Mail className="absolute left-3 h-4 w-4 text-slate-400" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="seuemail@exemplo.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
                   className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
+                  {...register('email')}
                 />
               </div>
+              {errors.email && (
+                <p className="text-sm text-rose-500 mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -94,24 +137,28 @@ export default function SignUpPage() {
                 Senha
               </Label>
               <div className="relative flex items-center">
-                <Lock className="absolute left-3 h-5 w-5 text-slate-400" />
+                <Lock className="absolute left-3 h-4 w-4 text-slate-400" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="Crie uma senha forte"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
                   className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
+                  {...register('password')}
                 />
               </div>
+              {errors.password && (
+                <p className="text-sm text-rose-500 mt-1">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <Button
               type="submit"
-              disabled={isPending}
+              disabled={isSubmitting}
               className="w-full bg-gradient-to-br cursor-pointer from-emerald-500/20 to-emerald-600/10 backdrop-blur-sm border border-emerald-500/20 rounded-xl p-6 text-white text-base font-semibold hover:border-emerald-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isPending ? 'Criando conta...' : 'Criar Conta'}
+              {isSubmitting ? 'Criando conta...' : 'Criar Conta'}
             </Button>
           </form>
 
