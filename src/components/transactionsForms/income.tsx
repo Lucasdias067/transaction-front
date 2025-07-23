@@ -26,6 +26,7 @@ import { useMutation } from '@tanstack/react-query'
 import { PlusCircle } from 'lucide-react'
 import { useState } from 'react'
 import CalendarForm from './components/CalendarForm'
+import { createTransaction } from '@/api/transactions/create-transaction'
 
 export function Income() {
   const [title, setTitle] = useState('')
@@ -60,6 +61,18 @@ export function Income() {
     }
   })
 
+  const { mutate: TransactionMutateFn } = useMutation({
+    mutationKey: ['create-transaction'],
+    mutationFn: createTransaction,
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      setTitle('')
+      setAmount('')
+      setCategory('')
+      setStatus('')
+    }
+  })
+  
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!date) return

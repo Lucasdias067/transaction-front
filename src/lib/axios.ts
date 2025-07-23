@@ -10,7 +10,7 @@ api.interceptors.request.use(async config => {
 
   const token = session?.user.accessToken
 
-  if (token) {
+  if (typeof token === 'string') {
     config.headers.Authorization = token
   }
 
