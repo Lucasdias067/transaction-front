@@ -20,12 +20,47 @@ import { useTransactionsContext } from '../_context/transactionsContext'
 import { Actions } from './Actions'
 import { MonthNavigator } from './MonthNavigator'
 
+const statusConfig = {
+  PAID: {
+    text: 'Pago',
+    className: 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+  },
+  RECEIVED: {
+    text: 'Recebido',
+    className: 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+  },
+  PENDING: {
+    text: 'Pendente',
+    className: 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+  },
+  OVERDUE: {
+    text: 'Atrasado',
+    className: 'bg-red-500/20 text-red-300 border border-red-500/30'
+  },
+  CANCELED: {
+    text: 'Cancelado',
+    className: 'bg-zinc-500/20 text-zinc-300 border border-zinc-500/30'
+  }
+}
+
 export function TransactionsTable() {
   const { transactionsResults } = useTransactionsContext()
 
+  if (!transactionsResults) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-slate-800/50 backdrop-blur-lg border border-slate-700/50 rounded-2xl p-6 shadow-2xl">
+          <h2 className="text-xl font-semibold text-white text-center">
+            Carregando transações...
+          </h2>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="bg-slate-800/50 backdrop-blur-lg border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="bg-slate-800/50 backdrop-blur-lg  border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl">
         <div className="grid grid-cols-2 md:grid-cols-3 items-center justify-items-center border-b border-slate-700/50 px-4 gap-4 py-6">
           <div className="hidden md:inline-block w-full">
             <h2 className="text-xl font-semibold text-white text-center">
@@ -69,83 +104,79 @@ export function TransactionsTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactionsResults && transactionsResults.data.map((tx, index) => (
-                <TableRow
-                  key={tx.id}
-                  className={`border-b border-slate-700/30 hover:bg-slate-700/20 transition-all duration-200 ${
-                    index % 2 === 0 ? 'bg-slate-800/20' : 'bg-slate-800/10'
-                  }`}
-                >
-                  <TableCell className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <span className="text-white font-medium text-base">
-                        {tx.title}
-                      </span>
-                      {tx.installmentNumber && (
-                        <span className="text-slate-400 text-sm mt-1">
-                          Parcela {tx.installmentNumber}/{tx.totalInstallments}
+              {transactionsResults &&
+                transactionsResults.data.map((tx, index) => (
+                  <TableRow
+                    key={tx.id}
+                    className={`border-b border-slate-700/30 hover:bg-slate-700/20 transition-all duration-200 ${
+                      index % 2 === 0 ? 'bg-slate-800/20' : 'bg-slate-800/10'
+                    }`}
+                  >
+                    <TableCell className="px-8 py-6">
+                      <div className="flex flex-col">
+                        <span className="text-white font-medium text-base">
+                          {tx.title}
+                        </span>
+                        {tx.installmentNumber && (
+                          <span className="text-slate-400 text-sm mt-1">
+                            Parcela {tx.installmentNumber}/
+                            {tx.totalInstallments}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-8 py-6 text-right">
+                      {tx.type === 'INCOME' ? (
+                        <span className="text-emerald-400 font-bold text-lg">
+                          + R${' '}
+                          {tx.amount.toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2
+                          })}
+                        </span>
+                      ) : (
+                        <span className="text-red-400 font-bold text-lg">
+                          - R${' '}
+                          {tx.amount.toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2
+                          })}
                         </span>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-8 py-6 text-right">
-                    {tx.type === 'INCOME' ? (
-                      <span className="text-emerald-400 font-bold text-lg">
-                        + R${' '}
-                        {tx.amount.toLocaleString('pt-BR', {
-                          minimumFractionDigits: 2
-                        })}
+                    </TableCell>
+                    <TableCell className="px-8 py-6">
+                      <span className="text-slate-300 font-medium">
+                        {tx.categoryName}
                       </span>
-                    ) : (
-                      <span className="text-red-400 font-bold text-lg">
-                        - R${' '}
-                        {tx.amount.toLocaleString('pt-BR', {
-                          minimumFractionDigits: 2
-                        })}
+                    </TableCell>
+                    <TableCell className="px-8 py-6 text-center">
+                      <span
+                        className={`inline-flex px-4 py-2 rounded-full text-sm font-medium ${
+                          tx.type === 'INCOME'
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                        }`}
+                      >
+                        {tx.type === 'INCOME' ? 'Receita' : 'Despesa'}
                       </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="px-8 py-6">
-                    <span className="text-slate-300 font-medium">
-                      {tx.categoryId}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-8 py-6 text-center">
-                    <span
-                      className={`inline-flex px-4 py-2 rounded-full text-sm font-medium ${
-                        tx.type === 'INCOME'
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                          : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                      }`}
-                    >
-                      {tx.type === 'INCOME' ? 'Receita' : 'Despesa'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-8 py-6 text-center">
-                    <span
-                      className={`inline-flex px-4 py-2 rounded-full text-sm font-medium ${
-                        tx.status === 'PAID'
-                          ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                      }`}
-                    >
-                      {tx.status === 'PAID'
-                        ? 'Pago'
-                        : tx.status === 'RECEIVED'
-                          ? 'Recebido'
-                          : 'Pendente'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-8 py-6 text-right">
-                    <span className="text-slate-400 font-medium">
-                      {new Date(tx.createdAt).toLocaleDateString('pt-BR')}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-8 py-6">
-                    <Actions id={tx.id} />
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell className="px-8 py-6 text-center">
+                      <span
+                        className={`inline-flex px-4 py-2 rounded-full text-sm font-medium ${
+                          statusConfig[tx.status]?.className ?? ''
+                        }`}
+                      >
+                        {statusConfig[tx.status]?.text ?? 'Desconhecido'}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-8 py-6 text-right">
+                      <span className="text-slate-400 font-medium">
+                        {new Date(tx.effectiveDate).toLocaleDateString('pt-BR')}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-8 py-6">
+                      <Actions id={tx.id} />
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </div>

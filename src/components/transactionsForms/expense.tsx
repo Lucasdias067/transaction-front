@@ -1,3 +1,5 @@
+import { createCategory } from '@/api/categories/create-category'
+import { createTransaction } from '@/api/transactions/create-transaction'
 import { useTransactionsContext } from '@/app/transactions/_context/transactionsContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,99 +23,127 @@ import {
   SheetTrigger
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
-import { api } from '@/lib/axios'
 import { queryClient } from '@/lib/use-query'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { PlusCircle } from 'lucide-react'
 import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { Toaster, toast } from 'sonner'
+import z from 'zod'
 import CalendarForm from './components/CalendarForm'
+import { formatCurrency, getAmountPerInstallment } from './utils/utils'
+
+const expenseTransactionSchema = z.object({
+  title: z.string().min(2, 'Título deve ter pelo menos 2 caracteres').max(100),
+  amount: z.string().min(1, 'Valor é obrigatório'),
+  category: z.string().min(1, 'Selecione uma categoria'),
+  status: z.enum(['PENDING', 'PAID'])
+})
+
+type ExpenseTransactionFormData = z.infer<typeof expenseTransactionSchema>
+
+// Constantes
+const FORM_CLASSES = {
+  input:
+    'bg-slate-900/50 border-slate-700/50 focus:border-red-500/80 focus-visible:ring-red-500/50',
+  select: 'bg-slate-800/80 backdrop-blur-lg border-slate-700/50 text-white'
+}
+
+const TOAST_CONFIG = {
+  position: 'bottom-left' as const,
+  style: { background: '#1e293b', color: '#fff' }
+}
 
 export function Expense() {
-  const [title, setTitle] = useState('')
-  const [amount, setAmount] = useState('')
-  const [category, setCategory] = useState('')
-  const [status, setStatus] = useState('')
-  const [date, setDate] = useState<Date | undefined>(new Date())
-
+  // Estados
+  const [showAddCategory, setShowAddCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [date, setDate] = useState(new Date())
   const [isRecurring, setIsRecurring] = useState(false)
   const [installments, setInstallments] = useState('2')
   const [amountType, setAmountType] = useState<'total' | 'per_installment'>(
     'total'
   )
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
 
-  const [showAddCategory, setShowAddCategory] = useState(false)
-  const [newCategoryName, setNewCategoryName] = useState('')
-
+  // Hooks
   const { CategoriesResults } = useTransactionsContext()
-
-  const categories = CategoriesResults?.data.filter(category => {
-    return category.type === 'EXPENSE'
+  const {
+    handleSubmit,
+    reset,
+    control,
+    watch,
+    formState: { errors },
+  } = useForm<ExpenseTransactionFormData>({
+    resolver: zodResolver(expenseTransactionSchema)
   })
+
+  // Dados derivados
+  const categories = CategoriesResults?.data.filter(
+    category => category.type === 'EXPENSE'
+  )
+  const watchedAmount = watch('amount')
+
+  // Reset form function
+  const resetForm = () => {
+    reset()
+    setDate(new Date())
+    setIsRecurring(false)
+    setInstallments('2')
+    setAmountType('total')
+    setNewCategoryName('')
+    setShowAddCategory(false)
+    setIsSheetOpen(false)
+  }
 
   const { mutate: categoryMutateFn } = useMutation({
     mutationKey: ['create-category'],
-    mutationFn: async (name: string) => {
-      return await api.post('/categories', {
-        name,
-        type: 'EXPENSE'
-      })
-    },
+    mutationFn: createCategory,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ['category'] })
       setNewCategoryName('')
       setShowAddCategory(false)
+      toast.success('Categoria criada com sucesso!', TOAST_CONFIG)
     }
   })
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  const { mutate: TransactionMutateFn } = useMutation({
+    mutationKey: ['create-transaction'],
+    mutationFn: createTransaction,
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      resetForm()
+      toast.success('Despesa criada com sucesso!', TOAST_CONFIG)
+    },
+    onError: () => {
+      toast.error('Erro ao adicionar despesa. Tente novamente.')
+    }
+  })
 
-    if (!date) return
+  function handleSubmitForm(data: ExpenseTransactionFormData) {
+    const amount = getAmountPerInstallment(
+      data.amount,
+      amountType,
+      installments
+    )
 
-    if (isRecurring) {
-      const totalAmount = parseFloat(amount)
-      const numInstallments = parseInt(installments, 10)
-
-      const installmentAmount =
-        amountType === 'total' ? totalAmount / numInstallments : totalAmount
-
-      const newExpenses = []
-      for (let i = 0; i < numInstallments; i++) {
-        const installmentDate = new Date(date)
-        installmentDate.setMonth(installmentDate.getMonth() + i)
-
-        newExpenses.push({
-          title: `${title} (${i + 1}/${numInstallments})`,
-          amount: installmentAmount,
-          category,
-          type: 'EXPENSE',
-          status,
-          date: installmentDate.toISOString()
-        })
-      }
-      console.log('Novas Despesas Parceladas:', newExpenses)
-    } else {
-      const newExpense = {
-        title,
-        amount: parseFloat(amount),
-        category,
-        type: 'EXPENSE',
-        status,
-        date: date?.toISOString()
-      }
-      console.log('Nova Despesa:', newExpense)
+    const transactionData = {
+      title: data.title,
+      amount,
+      categoryId: data.category,
+      status: data.status,
+      type: 'EXPENSE' as const,
+      installmentNumber: 1,
+      totalInstallments: isRecurring ? parseInt(installments) : 1,
+      effectiveDate: date
     }
 
-    // Lógica para fechar o sheet e exibir um toast de sucesso
+    TransactionMutateFn(transactionData)
   }
 
-  const formElementClasses =
-    'bg-slate-900/50 border-slate-700/50 focus:border-red-500/80 focus-visible:ring-red-500/50'
-  const formSelectContentClasses =
-    'bg-slate-800/80 backdrop-blur-lg border-slate-700/50 text-white'
-
   return (
-    <Sheet>
+    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
       <SheetTrigger asChild>
         <div className="text-left hover:bg-red-500/20 cursor-pointer rounded-lg p-3 transition-colors duration-200">
           <div className="font-medium text-red-400">Adicionar Despesa</div>
@@ -134,34 +164,55 @@ export function Expense() {
         </SheetHeader>
 
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(handleSubmitForm)}
           className="flex-1 overflow-y-auto p-6 space-y-6"
+          id="expense-form"
         >
           <div className="grid gap-2">
             <Label htmlFor="expense-name">Transação</Label>
-            <Input
-              id="expense-name"
-              placeholder="Ex: Conta de luz"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              className={formElementClasses}
-              required
+            <Controller
+              name="title"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  id="expense-name"
+                  placeholder="Ex: Conta de luz"
+                  className={FORM_CLASSES.input}
+                  value={field.value || ''}
+                  onChange={e => field.onChange(e.target.value)}
+                  aria-invalid={!!errors.title}
+                />
+              )}
             />
+            {errors.title && (
+              <span className="text-red-400 text-sm">
+                {errors.title.message}
+              </span>
+            )}
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="expense-amount">Valor</Label>
-            <Input
-              id="expense-amount"
-              type="number"
-              placeholder="R$ 0,00"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-              className={formElementClasses}
-              step="0.01"
-              min="0"
-              required
+            <Controller
+              name="amount"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  id="expense-amount"
+                  type="text"
+                  placeholder="R$ 0,00"
+                  className={FORM_CLASSES.input}
+                  value={formatCurrency(String(field.value || ''))}
+                  onChange={e => field.onChange(formatCurrency(e.target.value))}
+                  aria-invalid={!!errors.amount}
+                />
+              )}
             />
+            {errors.amount && (
+              <span className="text-red-400 text-sm">
+                {errors.amount.message}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-slate-700/50 p-3">
@@ -190,14 +241,17 @@ export function Expense() {
                   type="number"
                   value={installments}
                   onChange={e => setInstallments(e.target.value)}
-                  className={formElementClasses}
+                  className={FORM_CLASSES.input}
                   min="2"
                   required={isRecurring}
                 />
               </div>
 
               <div className="grid gap-2">
-                <Label>O valor de R$ {amount || '0,00'} informado é:</Label>
+                <Label>
+                  O valor de {formatCurrency(watchedAmount?.toString() || '0')}{' '}
+                  informado é:
+                </Label>
                 <RadioGroup
                   value={amountType}
                   onValueChange={value =>
@@ -233,25 +287,34 @@ export function Expense() {
           <div className="grid gap-2">
             <Label htmlFor="expense-category">Categoria</Label>
             <div className="flex items-center gap-3">
-              <Select value={category} onValueChange={setCategory} required>
-                <SelectTrigger
-                  id="expense-category"
-                  className={formElementClasses}
-                >
-                  <SelectValue placeholder="Selecione a categoria" />
-                </SelectTrigger>
-                <SelectContent className={formSelectContentClasses}>
-                  {categories?.map(cat => (
-                    <SelectItem
-                      key={cat.id}
-                      value={cat.id}
-                      className="cursor-pointer hover:!bg-red-500/20"
+              <Controller
+                name="category"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value || ''}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger
+                      id="expense-category"
+                      className={FORM_CLASSES.input}
                     >
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      <SelectValue placeholder="Selecione a categoria" />
+                    </SelectTrigger>
+                    <SelectContent className={FORM_CLASSES.select}>
+                      {categories?.map(cat => (
+                        <SelectItem
+                          key={cat.id}
+                          value={cat.id}
+                          className="cursor-pointer hover:!bg-red-500/20"
+                        >
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               <Button
                 type="button"
                 size="sm"
@@ -262,6 +325,11 @@ export function Expense() {
                 Nova categoria
               </Button>
             </div>
+            {errors.category && (
+              <span className="text-red-400 text-sm">
+                {errors.category.message}
+              </span>
+            )}
 
             {showAddCategory && (
               <div className="flex gap-2 mt-2">
@@ -269,13 +337,15 @@ export function Expense() {
                   placeholder="Nome da nova categoria"
                   value={newCategoryName}
                   onChange={e => setNewCategoryName(e.target.value)}
-                  className={formElementClasses}
+                  className={FORM_CLASSES.input}
                 />
                 <Button
                   type="button"
                   variant="outline"
                   className="bg-red-500/20 border-red-500/50 hover:bg-red-500/30 text-red-300 hover:text-red-300"
-                  onClick={() => categoryMutateFn(newCategoryName)}
+                  onClick={() =>
+                    categoryMutateFn({ name: newCategoryName, type: 'EXPENSE' })
+                  }
                 >
                   Adicionar
                 </Button>
@@ -284,25 +354,39 @@ export function Expense() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="expense-status">Status</Label>
-            <Select value={status} onValueChange={setStatus} required>
-              <SelectTrigger id="expense-status" className={formElementClasses}>
-                <SelectValue placeholder="Selecione o status" />
-              </SelectTrigger>
-              <SelectContent className={formSelectContentClasses}>
-                <SelectItem
-                  value="PAID"
-                  className="cursor-pointer hover:!bg-red-500/20"
-                >
-                  Pago
-                </SelectItem>
-                <SelectItem
-                  value="PENDING"
-                  className="cursor-pointer hover:!bg-red-500/20"
-                >
-                  Pendente
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value || ''} onValueChange={field.onChange}>
+                  <SelectTrigger
+                    id="expense-status"
+                    className={FORM_CLASSES.input}
+                  >
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                  <SelectContent className={FORM_CLASSES.select}>
+                    <SelectItem
+                      value="PAID"
+                      className="cursor-pointer hover:!bg-red-500/20"
+                    >
+                      Pago
+                    </SelectItem>
+                    <SelectItem
+                      value="PENDING"
+                      className="cursor-pointer hover:!bg-red-500/20"
+                    >
+                      Pendente
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.status && (
+              <span className="text-red-400 text-sm">
+                {errors.status.message}
+              </span>
+            )}
           </div>
           <CalendarForm date={date} setDate={setDate} />
         </form>
@@ -326,6 +410,7 @@ export function Expense() {
           </Button>
         </SheetFooter>
       </SheetContent>
+      <Toaster />
     </Sheet>
   )
 }

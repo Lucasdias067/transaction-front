@@ -12,10 +12,14 @@ interface TransactionProps {
   type: TransactionType
   userId: string
   categoryId: string
+  categoryName: string
   status: TransactionStatus
   installmentNumber?: number
   totalInstallments?: number
   installmentGroupId?: string
+  dueDate?: Date
+  paidAt?: Date
+  effectiveDate: Date
   createdAt: Date
   updatedAt: Date
 }

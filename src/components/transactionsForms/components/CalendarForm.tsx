@@ -12,7 +12,7 @@ import { CalendarIcon } from 'lucide-react'
 
 interface CalendarFormProps {
   date: Date | undefined
-  setDate: React.Dispatch<React.SetStateAction<Date | undefined>>
+  setDate: React.Dispatch<React.SetStateAction<Date>>
 }
 
 export default function CalendarForm({ date, setDate }: CalendarFormProps) {
