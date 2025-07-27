@@ -1,4 +1,5 @@
 import { api } from '@/lib/axios'
+
 export interface TransactionsQuery {
   page?: string | null
   per_page?: string | null

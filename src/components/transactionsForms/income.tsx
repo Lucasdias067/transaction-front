@@ -21,6 +21,7 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet'
+import { Toaster } from '@/components/ui/sonner'
 import { Switch } from '@/components/ui/switch'
 import { queryClient } from '@/lib/use-query'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,7 +29,7 @@ import { useMutation } from '@tanstack/react-query'
 import { PlusCircle } from 'lucide-react'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { Toaster, toast } from 'sonner'
+import { toast } from 'sonner'
 import z from 'zod'
 import CalendarForm from './components/CalendarForm'
 import { formatCurrency, validateRecurrences } from './utils/utils'
@@ -71,7 +72,7 @@ export function Income() {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   // Hooks
-  const { CategoriesResults } = useTransactionsContext()
+  const { categoriesResults } = useTransactionsContext()
   const {
     register,
     handleSubmit,
@@ -83,7 +84,7 @@ export function Income() {
   })
 
   // Dados derivados
-  const categories = CategoriesResults?.data.filter(
+  const categories = categoriesResults?.data.filter(
     category => category.type === 'INCOME'
   )
   const isRecurrenceValid = validateRecurrences(recurrences)

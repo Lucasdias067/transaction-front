@@ -20,7 +20,7 @@ function useTransactions() {
 
   const dateString = date?.toISOString()?.split('T')[0]
 
-  const transactionsQuery = useQuery({
+  const { data: transactionsResults } = useQuery({
     queryKey: ['transactions', { date: dateString, page, perPage }],
     queryFn: () => {
       return getTransaction({
@@ -32,7 +32,7 @@ function useTransactions() {
     enabled: !!data?.user.accessToken
   })
 
-  const { data: CategoriesResults } = useQuery({
+  const { data: categoriesResults } = useQuery({
     queryKey: ['category'],
     queryFn: () => getCategory(),
     enabled: !!data?.user.accessToken
@@ -45,8 +45,8 @@ function useTransactions() {
     setPage,
     perPage,
     setPerPage,
-    transactionsResults: transactionsQuery.data,
-    CategoriesResults
+    transactionsResults,
+    categoriesResults
   }
 }
 
