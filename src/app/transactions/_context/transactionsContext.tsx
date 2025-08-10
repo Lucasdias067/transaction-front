@@ -1,9 +1,9 @@
-import { getCategory } from '@/api/categories/get-category'
-import { getTransaction } from '@/api/transactions/get-transaction'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { parseAsIsoDate, parseAsString, useQueryState } from 'nuqs'
-import { ReactNode, createContext, useContext } from 'react'
+import { createContext, ReactNode, useContext } from 'react'
+import { getCategory } from '@/api/categories/get-category'
+import { getTransaction } from '@/api/transactions/get-transaction'
 
 function useTransactions() {
   const { data } = useSession()

@@ -1,6 +1,6 @@
-import { api } from '@/lib/axios'
 import { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { api } from '@/lib/axios'
 
 interface Response {
   id: string

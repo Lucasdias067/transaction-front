@@ -1,7 +1,7 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { SumaryCards } from './_components/Sumary'
 import { TransactionsTable } from './_components/TransactionsTable'
 import { TransactionsProvider } from './_context/transactionsContext'

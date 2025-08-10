@@ -1,10 +1,5 @@
 'use client'
 
-import { SignUpUser } from '@/api/auth/sign-up-user'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Toaster } from '@/components/ui/sonner'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { Lock, Mail, User } from 'lucide-react'
@@ -13,6 +8,11 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { SignUpUser } from '@/api/auth/sign-up-user'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Toaster } from '@/components/ui/sonner'
 
 const signUpSchema = z.object({
   name: z

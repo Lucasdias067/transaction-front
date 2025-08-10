@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { useTransactionsContext } from '../_context/transactionsContext'
 
 export function MonthNavigator() {

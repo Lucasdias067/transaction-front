@@ -1,3 +1,4 @@
+import { PlusCircleIcon } from 'lucide-react'
 import { Expense } from '@/components/transactionsForms/expense'
 import { Income } from '@/components/transactionsForms/income'
 import { Button } from '@/components/ui/button'
@@ -15,7 +16,6 @@ import {
   TableRow
 } from '@/components/ui/table'
 import { columns } from '@/utils/columns'
-import { PlusCircleIcon } from 'lucide-react'
 import { useTransactionsContext } from '../_context/transactionsContext'
 import { Actions } from './Actions'
 import { MonthNavigator } from './MonthNavigator'

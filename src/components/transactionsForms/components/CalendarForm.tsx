@@ -1,3 +1,5 @@
+import { ptBR } from 'date-fns/locale'
+import { CalendarIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Label } from '@/components/ui/label'
@@ -7,8 +9,6 @@ import {
   PopoverTrigger
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
-import { ptBR } from 'date-fns/locale'
-import { CalendarIcon } from 'lucide-react'
 
 interface CalendarFormProps {
   date: Date | undefined

@@ -14,7 +14,7 @@ export interface TransactionRequest {
 }
 
 export async function createTransaction(data: TransactionRequest) {
- return await api.post('/transactions', {
+  return await api.post('/transactions', {
     title: data.title,
     amount: data.amount,
     type: data.type,

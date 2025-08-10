@@ -14,9 +14,15 @@ export const validateRecurrences = (value: string) => {
 }
 
 export function parseCurrency(value: string): number {
-  return parseFloat(
-    value.replace(/R\$\s?/g, '').replace(/\./g, '').replace(',', '.').trim()
-  ) || 0
+  return (
+    parseFloat(
+      value
+        .replace(/R\$\s?/g, '')
+        .replace(/\./g, '')
+        .replace(',', '.')
+        .trim()
+    ) || 0
+  )
 }
 
 export function getAmountPerInstallment(

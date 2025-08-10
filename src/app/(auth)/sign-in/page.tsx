@@ -1,15 +1,15 @@
 'use client'
 
+import { AlertTriangle, CircleCheck, CircleX, Lock, Mail } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Toaster } from '@/components/ui/sonner'
-import { AlertTriangle, CircleCheck, CircleX, Lock, Mail } from 'lucide-react'
-import { signIn } from 'next-auth/react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { toast } from 'sonner'
 
 export default function SignInPage() {
   const router = useRouter()
