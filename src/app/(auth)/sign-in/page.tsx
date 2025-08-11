@@ -1,15 +1,14 @@
 'use client'
 
-import { AlertTriangle, CircleCheck, CircleX, Lock, Mail } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
-import { useState } from 'react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Toaster } from '@/components/ui/sonner'
+import { AlertTriangle, CircleCheck, CircleX, Lock, Mail } from 'lucide-react'
+import { signIn } from 'next-auth/react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 export default function SignInPage() {
   const router = useRouter()
@@ -43,7 +42,7 @@ export default function SignInPage() {
         icon: <CircleCheck className="h-5 w-5" />
       })
 
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 1000))
       router.push('/transactions')
     } catch (error) {
       setIsLoading(false)
@@ -121,7 +120,7 @@ export default function SignInPage() {
         </div>
       </div>
 
-      <Toaster
+      {/* <Toaster
         position="bottom-center"
         toastOptions={{
           classNames: {
@@ -139,7 +138,7 @@ export default function SignInPage() {
             info: 'group toast border-blue-500/50 text-blue-400'
           }
         }}
-      />
+      /> */}
     </div>
   )
 }
