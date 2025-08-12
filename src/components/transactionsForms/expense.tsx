@@ -29,35 +29,34 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet'
-import { Toaster } from '@/components/ui/sonner'
 import { Switch } from '@/components/ui/switch'
 import { queryClient } from '@/lib/use-query'
 import CalendarForm from './components/CalendarForm'
 import { formatCurrency, getAmountPerInstallment } from './utils/utils'
 
 const expenseTransactionSchema = z.object({
-  title: z.string().min(2, 'Título deve ter pelo menos 2 caracteres').max(100),
-  amount: z.string().min(1, 'Valor é obrigatório'),
-  category: z.string().min(1, 'Selecione uma categoria'),
-  status: z.enum(['PENDING', 'PAID'])
+  title: z
+    .string({ message: 'Título é obrigatório' })
+    .min(2, 'Título deve ter pelo menos 2 caracteres')
+    .max(100),
+  amount: z
+    .string({ message: 'Valor é obrigatório' })
+    .min(1, 'Valor é obrigatório'),
+  category: z
+    .string({ message: 'Selecione uma categoria' })
+    .min(1, 'Selecione uma categoria'),
+  status: z.enum(['PENDING', 'PAID'], { message: 'Status é obrigatório' })
 })
 
 type ExpenseTransactionFormData = z.infer<typeof expenseTransactionSchema>
 
-// Constantes
 const FORM_CLASSES = {
   input:
     'bg-slate-900/50 border-slate-700/50 focus:border-red-500/80 focus-visible:ring-red-500/50',
   select: 'bg-slate-800/80 backdrop-blur-lg border-slate-700/50 text-white'
 }
 
-const TOAST_CONFIG = {
-  position: 'bottom-left' as const,
-  style: { background: '#1e293b', color: '#fff' }
-}
-
 export function Expense() {
-  // Estados
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [date, setDate] = useState(new Date())
@@ -68,25 +67,23 @@ export function Expense() {
   )
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
-  // Hooks
   const { categoriesResults } = useTransactionsContext()
+
   const {
     handleSubmit,
     reset,
     control,
     watch,
-    formState: { errors }
+    formState: { errors, isValid }
   } = useForm<ExpenseTransactionFormData>({
     resolver: zodResolver(expenseTransactionSchema)
   })
 
-  // Dados derivados
   const categories = categoriesResults?.data.filter(
     category => category.type === 'EXPENSE'
   )
   const watchedAmount = watch('amount')
 
-  // Reset form function
   const resetForm = () => {
     reset()
     setDate(new Date())
@@ -99,26 +96,27 @@ export function Expense() {
   }
 
   const { mutate: categoryMutateFn } = useMutation({
-    mutationKey: ['create-category'],
     mutationFn: createCategory,
-    onSuccess() {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category'] })
       setNewCategoryName('')
       setShowAddCategory(false)
-      toast.success('Categoria criada com sucesso!', TOAST_CONFIG)
+      toast.success('Categoria criada com sucesso!')
+    },
+    onError: error => {
+      toast.error(`Erro ao criar categoria: ${error.message}`)
     }
   })
 
   const { mutate: TransactionMutateFn } = useMutation({
-    mutationKey: ['create-transaction'],
     mutationFn: createTransaction,
-    onSuccess() {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       resetForm()
-      toast.success('Despesa criada com sucesso!', TOAST_CONFIG)
+      toast.success('Despesa criada com sucesso!')
     },
-    onError: () => {
-      toast.error('Erro ao adicionar despesa. Tente novamente.')
+    onError: error => {
+      toast.error(`Erro ao criar despesa: ${error.message}`)
     }
   })
 
@@ -344,6 +342,7 @@ export function Expense() {
                   type="button"
                   variant="outline"
                   className="bg-red-500/20 border-red-500/50 hover:bg-red-500/30 text-red-300 hover:text-red-300"
+                  disabled={!newCategoryName.trim()}
                   onClick={() =>
                     categoryMutateFn({ name: newCategoryName, type: 'EXPENSE' })
                   }
@@ -408,13 +407,13 @@ export function Expense() {
           <Button
             type="submit"
             form="expense-form"
+            disabled={!isValid}
             className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white"
           >
             Salvar Despesa
           </Button>
         </SheetFooter>
       </SheetContent>
-      <Toaster />
     </Sheet>
   )
 }

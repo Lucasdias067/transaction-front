@@ -15,7 +15,7 @@ function useTransactions() {
   const [page, setPage] = useQueryState('page', parseAsString.withDefault('1'))
   const [perPage, setPerPage] = useQueryState(
     'perPage',
-    parseAsString.withDefault('5')
+    parseAsString.withDefault('99')
   )
 
   const dateString = date?.toISOString()?.split('T')[0]
@@ -54,7 +54,7 @@ type TransactionsContextType = ReturnType<typeof useTransactions>
 
 const TransactionsContext = createContext<TransactionsContextType | null>(null)
 
-export function TransactionsProvider({ children }: { children: ReactNode }) {
+export function TransactionsProvider({ children }: React.PropsWithChildren) {
   const transactions = useTransactions()
 
   return (

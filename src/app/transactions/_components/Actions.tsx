@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { Edit, EllipsisVertical, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { deleteTransaction } from '@/api/transactions/delete-transaction'
 import {
   AlertDialog,
@@ -26,10 +27,10 @@ interface ActionsProps {
 
 export function Actions({ id }: ActionsProps) {
   const { mutate: deleteTransactionMutateFn } = useMutation({
-    mutationKey: ['delete-transaction'],
     mutationFn: deleteTransaction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      toast.success('Transação removida com sucesso!')
     }
   })
 

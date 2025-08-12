@@ -28,42 +28,39 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet'
-import { Toaster } from '@/components/ui/sonner'
 import { Switch } from '@/components/ui/switch'
 import { queryClient } from '@/lib/use-query'
 import CalendarForm from './components/CalendarForm'
 import { formatCurrency, validateRecurrences } from './utils/utils'
 
 const incomeTransactionSchema = z.object({
-  title: z.string().min(2, 'Título deve ter pelo menos 2 caracteres').max(100),
+  title: z
+    .string({ message: 'Título é obrigatório' })
+    .min(2, 'Título deve ter pelo menos 2 caracteres')
+    .max(100),
   amount: z
-    .string()
+    .string({ message: 'Valor é obrigatório' })
     .transform(val => {
       const numbers = val.replace(/\D/g, '')
       return numbers ? parseInt(numbers) / 100 : 0
     })
     .refine(val => val > 0, { message: 'Valor deve ser maior que zero' })
     .transform(val => val.toString()),
-  category: z.string().min(1, 'Selecione uma categoria'),
-  status: z.enum(['PENDING', 'RECEIVED'])
+  category: z
+    .string({ message: 'Selecione uma categoria' })
+    .min(1, 'Selecione uma categoria'),
+  status: z.enum(['PENDING', 'RECEIVED'], { message: 'Status é obrigatório' })
 })
 
 type IncomeTransactionFormData = z.infer<typeof incomeTransactionSchema>
 
-// Constantes
 const FORM_CLASSES = {
   input:
     'bg-slate-900/50 border-slate-700/50 focus:border-emerald-500/80 focus-visible:ring-emerald-500/50',
   select: 'bg-slate-800/80 backdrop-blur-lg border-slate-700/50 text-white'
 }
 
-const TOAST_CONFIG = {
-  position: 'bottom-left' as const,
-  style: { background: '#1e293b', color: '#fff' }
-}
-
 export function Income() {
-  // Estados
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [date, setDate] = useState(new Date())
@@ -71,7 +68,6 @@ export function Income() {
   const [recurrences, setRecurrences] = useState('2')
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
-  // Hooks
   const { categoriesResults } = useTransactionsContext()
   const {
     register,
@@ -83,13 +79,12 @@ export function Income() {
     resolver: zodResolver(incomeTransactionSchema)
   })
 
-  // Dados derivados
   const categories = categoriesResults?.data.filter(
     category => category.type === 'INCOME'
   )
+
   const isRecurrenceValid = validateRecurrences(recurrences)
 
-  // Reset form function
   const resetForm = () => {
     reset()
     setDate(new Date())
@@ -100,29 +95,31 @@ export function Income() {
     setIsSheetOpen(false)
   }
 
-  // Mutations
   const { mutate: categoryMutateFn } = useMutation({
-    mutationKey: ['create-category'],
     mutationFn: createCategory,
-    onSuccess() {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category'] })
       setNewCategoryName('')
       setShowAddCategory(false)
-      toast.success('Categoria criada com sucesso!', TOAST_CONFIG)
+      toast.success('Categoria criada com sucesso!')
+    },
+    onError: error => {
+      toast.error(`Erro ao criar categoria: ${error.message}`)
     }
   })
 
   const { mutate: TransactionMutateFn } = useMutation({
-    mutationKey: ['create-transaction'],
     mutationFn: createTransaction,
-    onSuccess() {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       resetForm()
-      toast.success('Receita criada com sucesso!', TOAST_CONFIG)
+      toast.success('Receita criada com sucesso!')
+    },
+    onError: error => {
+      toast.error(`Erro ao criar receita: ${error.message}`)
     }
   })
 
-  // Handlers
   function handleSubmitForm(data: IncomeTransactionFormData) {
     TransactionMutateFn({
       title: data.title,
@@ -287,6 +284,7 @@ export function Income() {
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={!newCategoryName.trim()}
                   className="bg-emerald-500/20 border-emerald-500/50 hover:bg-emerald-500/30 text-emerald-300 hover:text-emerald-300"
                   onClick={() =>
                     categoryMutateFn({ name: newCategoryName, type: 'INCOME' })
@@ -354,7 +352,6 @@ export function Income() {
           </Button>
         </SheetFooter>
       </SheetContent>
-      <Toaster {...TOAST_CONFIG} />
     </Sheet>
   )
 }

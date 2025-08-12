@@ -9,9 +9,27 @@ import { useTransactionsContext } from '../_context/transactionsContext'
 export function SumaryCards() {
   const { transactionsResults } = useTransactionsContext()
 
-  const balance = 1000
-  const totalExpenses = 1000
-  const totalIncome = 5000
+  if (!transactionsResults?.data) {
+    return (
+      <div className="flex flex-row items-center justify-center mb-8 gap-4">
+        <div className="h-24 w-96 bg-slate-700/30 backdrop-blur-sm rounded-xl animate-pulse border border-slate-600/30" />
+        <div className="h-24 w-96 bg-slate-700/30 backdrop-blur-sm rounded-xl animate-pulse border border-slate-600/30" />
+        <div className="h-24 w-96 bg-slate-700/30 backdrop-blur-sm rounded-xl animate-pulse border border-slate-600/30" />
+      </div>
+    )
+  }
+
+  const { totalExpenses, totalIncome } = transactionsResults?.data.reduce(
+    (acc, transaction) => {
+      if (transaction.type === 'INCOME') {
+        return { ...acc, totalIncome: acc.totalIncome + transaction.amount }
+      }
+      return { ...acc, totalExpenses: acc.totalExpenses + transaction.amount }
+    },
+    { totalExpenses: 0, totalIncome: 0 }
+  )
+
+  const balance = totalIncome - totalExpenses
 
   return (
     <div className="max-w-7xl mx-auto mb-8">

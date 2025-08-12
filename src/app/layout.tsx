@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 import { Providers } from './providers'
 
@@ -29,6 +30,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>{children}</Providers>
+        <Toaster
+          position="bottom-center"
+          theme="system"
+          duration={3000}
+          richColors
+        />
       </body>
     </html>
   )

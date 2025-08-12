@@ -1,5 +1,3 @@
-import { Toaster } from 'sonner'
-
 export default function Layout({
   children
 }: Readonly<{
@@ -8,12 +6,12 @@ export default function Layout({
   return (
     <main>
       {children}
-      <Toaster
+      {/* <Toaster
         position="top-center"
         theme="system"
         richColors
         duration={2000}
-      />
+      /> */}
     </main>
   )
 }
