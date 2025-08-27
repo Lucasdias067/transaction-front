@@ -1,6 +1,6 @@
+import { api } from '@/lib/axios'
 import { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { api } from '@/lib/axios'
 
 interface Response {
   id: string
@@ -43,6 +43,15 @@ export const authOptions: AuthOptions = {
       }
     })
   ],
+  pages: {
+    signIn: '/sign-in',
+    error: '/sign-in'
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 24 * 60 * 60
+  },
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

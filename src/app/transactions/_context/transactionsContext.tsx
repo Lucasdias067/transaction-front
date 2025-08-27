@@ -1,9 +1,11 @@
+'use client'
+
+import { getCategory } from '@/api/categories/get-category'
+import { getTransaction } from '@/api/transactions/get-transaction'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { parseAsIsoDate, parseAsString, useQueryState } from 'nuqs'
-import { createContext, ReactNode, useContext } from 'react'
-import { getCategory } from '@/api/categories/get-category'
-import { getTransaction } from '@/api/transactions/get-transaction'
+import { createContext, useContext } from 'react'
 
 function useTransactions() {
   const { data } = useSession()
@@ -15,7 +17,7 @@ function useTransactions() {
   const [page, setPage] = useQueryState('page', parseAsString.withDefault('1'))
   const [perPage, setPerPage] = useQueryState(
     'perPage',
-    parseAsString.withDefault('99')
+    parseAsString.withDefault('10')
   )
 
   const dateString = date?.toISOString()?.split('T')[0]

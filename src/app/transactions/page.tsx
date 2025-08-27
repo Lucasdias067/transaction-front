@@ -1,32 +1,28 @@
-'use client'
-
+import { Header } from '@/components/Header'
+import { authOptions } from '@/lib/auth'
+import { Metadata } from 'next'
+import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import { SumaryCards } from './_components/Sumary'
-import { TransactionsTable } from './_components/TransactionsTable'
-import { TransactionsProvider } from './_context/transactionsContext'
+import TransactionsClientPage from './TransactionsClientPage'
 
-export default function TransactionsPage() {
-  const { status } = useSession()
+export default async function TransactionsPage() {
+  const session = await getServerSession(authOptions)
 
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="h-12 w-32 bg-slate-700/30 backdrop-blur-sm rounded-xl animate-pulse border border-slate-600/30" />
-      </div>
-    )
-  }
-
-  if (status === 'unauthenticated') {
+  if (!session) {
     redirect('/sign-in')
   }
 
   return (
-    <TransactionsProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 sm:p-8">
-        <SumaryCards />
-        <TransactionsTable />
-      </div>
-    </TransactionsProvider>
+    <main>
+      <Header />
+      <TransactionsClientPage />
+    </main>
   )
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Transações',
+    description: 'Gerencie suas transações financeiras'
+  }
 }

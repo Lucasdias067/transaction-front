@@ -1,12 +1,27 @@
-import { PlusCircleIcon } from 'lucide-react'
 import { Expense } from '@/components/transactionsForms/expense'
 import { Income } from '@/components/transactionsForms/income'
 import { Button } from '@/components/ui/button'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from '@/components/ui/pagination'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger
 } from '@/components/ui/popover'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -16,9 +31,12 @@ import {
   TableRow
 } from '@/components/ui/table'
 import { columns } from '@/utils/columns'
+import { PlusCircleIcon } from 'lucide-react'
+import { useMemo } from 'react'
 import { useTransactionsContext } from '../_context/transactionsContext'
 import { Actions } from './Actions'
 import { MonthNavigator } from './MonthNavigator'
+import { TransactionsSkeleton } from './TransactionsSkeleton'
 
 const statusConfig = {
   PAID: {
@@ -44,22 +62,30 @@ const statusConfig = {
 }
 
 export function TransactionsTable() {
-  const { transactionsResults } = useTransactionsContext()
+  const { transactionsResults, setPage, setPerPage } = useTransactionsContext()
 
   if (!transactionsResults) {
-    return (
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-slate-800/50 backdrop-blur-lg border border-slate-700/50 rounded-2xl p-6 shadow-2xl">
-          <h2 className="text-xl font-semibold text-white text-center">
-            Carregando transações...
-          </h2>
-        </div>
-      </div>
-    )
+    return <TransactionsSkeleton />
   }
 
+  const currentPage = transactionsResults.meta.currentPage
+  const itemsPerPage = transactionsResults.meta.perPage
+  const totalItems = transactionsResults.meta?.total || 0
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  const pageNumbersToDisplay = useMemo(() => {
+    const pages = []
+    const start = Math.max(1, currentPage - 2)
+    const end = Math.min(totalPages, currentPage + 2)
+    for (let i = start; i <= end; i++) {
+      pages.push(i)
+    }
+
+    return pages
+  }, [currentPage, totalPages])
+
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto mb-16">
       <div className="bg-slate-800/50 backdrop-blur-lg  border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl">
         <div className="grid grid-cols-2 md:grid-cols-3 items-center justify-items-center border-b border-slate-700/50 px-4 gap-4 py-6">
           <div className="hidden md:inline-block w-full">
@@ -179,6 +205,89 @@ export function TransactionsTable() {
                 ))}
             </TableBody>
           </Table>
+        </div>
+      </div>
+      <div className="mt-6 px-2 flex flex-col md:flex-row items-center justify-between">
+        <div className="text-sm w-full flex flex-col items-start text-slate-400">
+          <p>
+            Página {currentPage} de {totalPages}
+          </p>{' '}
+          <p>Total de transações: {totalItems}</p>
+        </div>
+        <Pagination className="w-full">
+          <PaginationContent className="flex items-center gap-1">
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() =>
+                  currentPage > 1 && setPage((currentPage - 1).toString())
+                }
+                className={`px-3 py-2 rounded-lg border transition-all duration-200 ${
+                  currentPage <= 1
+                    ? 'pointer-events-none opacity-50 bg-slate-800/30 border-slate-700/30 text-slate-500'
+                    : 'cursor-pointer bg-slate-800/50 border-slate-700/50 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600/50 hover:text-white'
+                }`}
+              />
+            </PaginationItem>
+            {pageNumbersToDisplay.map(pageNum => (
+              <PaginationItem key={pageNum}>
+                <PaginationLink
+                  isActive={pageNum === currentPage}
+                  onClick={() => setPage(pageNum.toString())}
+                  className={`px-4 py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
+                    pageNum === currentPage
+                      ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300 font-medium'
+                      : 'bg-slate-800/50 border-slate-700/50 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600/50 hover:text-white'
+                  }`}
+                >
+                  {pageNum}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            {totalPages > pageNumbersToDisplay.length && totalPages > 5 && (
+              <PaginationItem>
+                <PaginationEllipsis className="px-2 py-2 text-slate-500" />
+              </PaginationItem>
+            )}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() =>
+                  currentPage < totalPages &&
+                  setPage((currentPage + 1).toString())
+                }
+                className={`px-3 py-2 rounded-lg border transition-all duration-200 ${
+                  currentPage >= totalPages
+                    ? 'pointer-events-none opacity-50 bg-slate-800/30 border-slate-700/30 text-slate-500'
+                    : 'cursor-pointer bg-slate-800/50 border-slate-700/50 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600/50 hover:text-white'
+                }`}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+        <div className="flex items-center justify-end text-sm w-full text-slate-400">
+          <p>Itens por página:</p>
+          <Select
+            value={itemsPerPage.toString()}
+            onValueChange={value => {
+              setPerPage(value)
+              setPage('1')
+            }}
+          >
+            <SelectTrigger className="w-18 border border-gray-700 ml-2">
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent className="ml-2 bg-transparent backdrop-blur-md text-slate-300 rounded-md">
+              {[5, 10, 15, 20].map(size => (
+                <SelectItem
+                  className="cursor-pointer"
+                  key={size}
+                  value={size.toString()}
+                  defaultValue={itemsPerPage.toString()}
+                >
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

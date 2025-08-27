@@ -1,8 +1,5 @@
 'use client'
 
-import { CreditCard, LogIn, LogOut, Settings, User } from 'lucide-react'
-import Link from 'next/link'
-import { signOut, useSession } from 'next-auth/react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,6 +10,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { CreditCard, LogIn, LogOut, Settings, User } from 'lucide-react'
+import { signOut, useSession } from 'next-auth/react'
+import Link from 'next/link'
 
 export function Header() {
   const { data: session, status } = useSession()
