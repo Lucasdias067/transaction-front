@@ -18,9 +18,8 @@ interface TransactionProps {
   installmentNumber?: number
   totalInstallments?: number
   installmentGroupId?: string
-  dueDate?: Date
-  paidAt?: Date
-  effectiveDate: Date
+  dueDate: Date
+  effectiveDate?: Date
   createdAt: Date
   updatedAt: Date
 }

@@ -94,7 +94,7 @@ export function SignInForm() {
                 name="email"
                 type="email"
                 placeholder="seuemail@exemplo.com"
-                autoComplete='email'
+                autoComplete="email"
                 className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
                 required
               />
@@ -114,7 +114,7 @@ export function SignInForm() {
                 name="password"
                 type="password"
                 placeholder="••••••••••••"
-                autoComplete='current-password'
+                autoComplete="current-password"
                 className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
                 required
               />

@@ -123,6 +123,8 @@ export function Income() {
   })
 
   function handleSubmitForm(data: IncomeTransactionFormData) {
+    const isTransactionsEffective = data.status === 'RECEIVED'
+
     TransactionMutateFn({
       title: data.title,
       amount: parseFloat(data.amount),
@@ -131,7 +133,8 @@ export function Income() {
       status: data.status,
       installmentNumber: 1,
       totalInstallments: isRecurring ? parseInt(recurrences) : 1,
-      effectiveDate: date
+      dueDate: date,
+      effectiveDate: isTransactionsEffective ? date : undefined
     })
   }
 

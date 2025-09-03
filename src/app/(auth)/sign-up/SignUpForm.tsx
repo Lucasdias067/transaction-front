@@ -99,7 +99,7 @@ export default function SignUpForm() {
                 id="name"
                 type="text"
                 placeholder="Seu nome completo"
-                autoComplete='name'
+                autoComplete="name"
                 className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
                 {...register('name')}
               />
@@ -121,7 +121,7 @@ export default function SignUpForm() {
                 id="email"
                 type="email"
                 placeholder="seuemail@exemplo.com"
-                autoComplete='email'
+                autoComplete="email"
                 className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
                 {...register('email')}
               />
@@ -143,7 +143,7 @@ export default function SignUpForm() {
                 id="password"
                 type="password"
                 placeholder="Crie uma senha forte"
-                autoComplete='new-password'
+                autoComplete="new-password"
                 className="bg-slate-900/50 border-slate-700 rounded-lg pl-10 focus:ring-emerald-500 focus:border-emerald-500"
                 {...register('password')}
               />

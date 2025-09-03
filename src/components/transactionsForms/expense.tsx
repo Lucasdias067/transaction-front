@@ -123,6 +123,8 @@ export function Expense() {
   })
 
   function handleSubmitForm(data: ExpenseTransactionFormData) {
+     const isTransactionsEffective = data.status === 'PAID'
+
     const amount = getAmountPerInstallment(
       data.amount,
       amountType,
@@ -137,7 +139,8 @@ export function Expense() {
       type: 'EXPENSE' as const,
       installmentNumber: 1,
       totalInstallments: isRecurring ? parseInt(installments) : 1,
-      effectiveDate: date
+      effectiveDate: isTransactionsEffective ? date : undefined,
+      dueDate: date
     }
 
     TransactionMutateFn(transactionData)

@@ -8,9 +8,8 @@ export interface TransactionRequest {
   status: TransactionStatus
   installmentNumber?: number
   totalInstallments?: number
-  dueDate?: Date
-  paidAt?: Date
-  effectiveDate: Date
+  dueDate: Date
+  effectiveDate?: Date
 }
 
 export async function createTransaction(data: TransactionRequest) {
@@ -23,7 +22,6 @@ export async function createTransaction(data: TransactionRequest) {
     installmentNumber: data.installmentNumber,
     totalInstallments: data.totalInstallments,
     dueDate: data.dueDate?.toISOString(),
-    paidAt: data.paidAt?.toISOString(),
-    effectiveDate: data.effectiveDate.toISOString()
+    effectiveDate: data.effectiveDate?.toISOString()
   })
 }

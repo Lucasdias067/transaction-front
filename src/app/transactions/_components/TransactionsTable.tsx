@@ -195,7 +195,7 @@ export function TransactionsTable() {
                     </TableCell>
                     <TableCell className="px-8 py-6 text-right">
                       <span className="text-slate-400 font-medium">
-                        {new Date(tx.effectiveDate).toLocaleDateString('pt-BR')}
+                        {new Date(tx.dueDate).toLocaleDateString('pt-BR')}
                       </span>
                     </TableCell>
                     <TableCell className="px-8 py-6">
