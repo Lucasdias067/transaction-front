@@ -244,7 +244,7 @@ export function TransactionsTable() {
                   onClick={() => setPage(pageNum.toString())}
                   className={`px-4 py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
                     pageNum === currentPage
-                      ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300 font-medium'
+                      ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/20 hover:border-emerald-600/30 hover:text-emerald-400 font-medium'
                       : 'bg-slate-800/50 border-slate-700/50 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600/50 hover:text-white'
                   }`}
                 >

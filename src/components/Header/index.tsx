@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { CreditCard, LogIn, LogOut, Settings, User } from 'lucide-react'
+import { BarChart3, CreditCard, LogIn, LogOut, User } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 
@@ -60,7 +60,7 @@ export function Header() {
                     className="flex items-center gap-3 px-8 py-7 hover:bg-slate-700/30 rounded-xl border border-slate-600/30 backdrop-blur-sm"
                   >
                     <Avatar className="h-9 w-9 border-2 border-slate-600/60 shadow-lg">
-                      <AvatarImage src={session.user.image ?? ''} />
+                      <AvatarImage src={''} />
                       <AvatarFallback className="text-sm font-semibold bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 text-emerald-300 border border-emerald-500/20">
                         {session.user.name?.[0].toUpperCase() ?? '?'}
                       </AvatarFallback>
@@ -108,13 +108,28 @@ export function Header() {
                     className="relative flex cursor-pointer select-none items-center rounded-lg p-0 outline-none transition-colors focus:bg-slate-700/50 focus:text-slate-200"
                   >
                     <Link
-                      href="/settings"
+                      href="/transactions"
+                      className="flex w-full items-center gap-3 px-3 py-2"
+                    >
+                      <div className="p-1 bg-emerald-500/20 rounded-md">
+                        <CreditCard className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <span>Transações</span>
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    asChild
+                    className="relative flex cursor-pointer select-none items-center rounded-lg p-0 outline-none transition-colors focus:bg-slate-700/50 focus:text-slate-200"
+                  >
+                    <Link
+                      href="/reports"
                       className="flex w-full items-center gap-3 px-3 py-2"
                     >
                       <div className="p-1 bg-purple-500/20 rounded-md">
-                        <Settings className="w-4 h-4 text-purple-400" />
+                        <BarChart3 className="w-4 h-4 text-purple-400" />
                       </div>
-                      <span>Configurações</span>
+                      <span>Relatórios</span>
                     </Link>
                   </DropdownMenuItem>
 
