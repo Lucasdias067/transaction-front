@@ -1,25 +1,18 @@
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useTransactionsContext } from '../_context/transactionsContext'
+import { useTransactionsContext } from '@/context/transactionsContext'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { useDebouncedCallback } from 'use-debounce'
 
 export function MonthNavigator() {
   const { date, setDate } = useTransactionsContext()
 
-  const handlePreviousMonth = () => {
+  const handleMonthChange = useDebouncedCallback((offset: number) => {
     setDate(prevDate => {
       const newDate = new Date(prevDate)
-      newDate.setMonth(newDate.getMonth() - 1)
+      newDate.setMonth(newDate.getMonth() + offset)
       return newDate
     })
-  }
-
-  const handleNextMonth = () => {
-    setDate(prevDate => {
-      const newDate = new Date(prevDate)
-      newDate.setMonth(newDate.getMonth() + 1)
-      return newDate
-    })
-  }
+  }, 200)
 
   const formattedMonthYear = date
     .toLocaleDateString('pt-BR', {
@@ -38,7 +31,7 @@ export function MonthNavigator() {
           variant="outline"
           size="icon"
           className="h-8 w-8 bg-transparent border-slate-700/50 text-slate-300 hover:bg-slate-700/50 hover:text-white"
-          onClick={handlePreviousMonth}
+          onClick={() => handleMonthChange(-1)}
         >
           <ChevronLeftIcon className="h-5 w-5" />
         </Button>
@@ -46,7 +39,7 @@ export function MonthNavigator() {
           variant="outline"
           size="icon"
           className="h-8 w-8 bg-transparent border-slate-700/50 text-slate-300 hover:bg-slate-700/50 hover:text-white"
-          onClick={handleNextMonth}
+          onClick={() => handleMonthChange(1)}
         >
           <ChevronRightIcon className="h-5 w-5" />
         </Button>

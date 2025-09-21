@@ -1,7 +1,6 @@
 export function TransactionsSkeleton() {
   return (
     <div className="max-w-7xl mx-auto bg-slate-800/50 backdrop-blur-lg border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl animate-pulse">
-      {/* Header */}
       <div className="grid grid-cols-2 md:grid-cols-3 items-center justify-items-center border-b border-slate-700/50 px-4 gap-4 py-6">
         <div className="hidden md:inline-block w-full text-center">
           <div className="h-6 w-48 bg-slate-700/50 rounded mx-auto" />
@@ -13,7 +12,6 @@ export function TransactionsSkeleton() {
         <div className="h-10 w-32 bg-slate-700/50 rounded-xl" />
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>

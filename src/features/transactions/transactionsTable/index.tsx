@@ -1,5 +1,3 @@
-import { Expense } from '@/components/transactionsForms/expense'
-import { Income } from '@/components/transactionsForms/income'
 import { Button } from '@/components/ui/button'
 import {
   Pagination,
@@ -30,13 +28,14 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { columns } from '@/utils/columns'
+import { useTransactionsContext } from '@/context/transactionsContext'
 import { PlusCircleIcon } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTransactionsContext } from '../_context/transactionsContext'
+import { TransactionsSkeleton } from '../TransactionsSkeleton'
+import { Expense } from '../transactionsForms/ExpenseSheet'
+import { Income } from '../transactionsForms/IncomeSheet'
 import { Actions } from './Actions'
 import { MonthNavigator } from './MonthNavigator'
-import { TransactionsSkeleton } from './TransactionsSkeleton'
 
 const statusConfig = {
   PAID: {
@@ -60,6 +59,16 @@ const statusConfig = {
     className: 'bg-zinc-500/20 text-zinc-300 border border-zinc-500/30'
   }
 }
+
+const columns = [
+  { name: 'Transação' },
+  { name: 'Preço' },
+  { name: 'Categoria' },
+  { name: 'Tipo' },
+  { name: 'Status' },
+  { name: 'Data' },
+  { name: 'Ações' }
+]
 
 export function TransactionsTable() {
   const { transactionsResults, setPage, setPerPage } = useTransactionsContext()

@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
-import TransactionsClientPage from './TransactionsClientPage'
+import TransactionsClient from './TransactionsClient'
 
 export default async function TransactionsPage() {
   const session = await getServerSession(authOptions)
@@ -15,7 +15,7 @@ export default async function TransactionsPage() {
   return (
     <main>
       <Header />
-      <TransactionsClientPage />
+      <TransactionsClient />
     </main>
   )
 }

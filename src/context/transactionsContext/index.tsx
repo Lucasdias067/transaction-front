@@ -31,7 +31,8 @@ function useTransactions() {
         per_page: perPage
       })
     },
-    enabled: !!data?.user.accessToken
+    enabled: !!data?.user.accessToken,
+    placeholderData: prev => prev
   })
 
   const { data: categoriesResults } = useQuery({

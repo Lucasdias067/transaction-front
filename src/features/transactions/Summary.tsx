@@ -1,20 +1,23 @@
+import { useTransactionsContext } from '@/context/transactionsContext'
 import {
   ArrowDownNarrowWide,
   ArrowUpNarrowWide,
   TrendingDown,
   TrendingUp
 } from 'lucide-react'
-import { useTransactionsContext } from '../_context/transactionsContext'
 
-export function SumaryCards() {
+export function SummaryCards() {
   const { transactionsResults } = useTransactionsContext()
 
   if (!transactionsResults?.data) {
     return (
       <div className="flex flex-row items-center justify-center mb-8 gap-4">
-        <div className="h-24 w-96 bg-slate-700/30 backdrop-blur-sm rounded-xl animate-pulse border border-slate-600/30" />
-        <div className="h-24 w-96 bg-slate-700/30 backdrop-blur-sm rounded-xl animate-pulse border border-slate-600/30" />
-        <div className="h-24 w-96 bg-slate-700/30 backdrop-blur-sm rounded-xl animate-pulse border border-slate-600/30" />
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div
+            key={index}
+            className="h-24 w-96 bg-slate-700/30 backdrop-blur-sm rounded-xl animate-pulse border border-slate-600/30"
+          />
+        ))}
       </div>
     )
   }
