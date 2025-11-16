@@ -1,5 +1,7 @@
 import { Header } from '@/components/Header'
 import { authOptions } from '@/lib/auth'
+import { generateText } from 'ai'
+import 'dotenv/config'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
@@ -11,6 +13,14 @@ export default async function ProfilePage() {
   if (!session) {
     redirect('/sign-in')
   }
+
+  const { text } = await generateText({
+    model: 'openai/gpt-5-nano',
+    prompt:
+      'Escreva uma breve descrição sobre gerenciamento de finanças pessoais.'
+  })
+
+  console.log('Response:', { text })
 
   return (
     <main>

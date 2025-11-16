@@ -2,7 +2,13 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Calendar, Camera, Mail, User } from 'lucide-react'
@@ -18,9 +24,7 @@ export default function ProfileClient() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-2">
             Meu Perfil
           </h1>
-          <p className="text-slate-400">
-            Gerencie as informações da sua conta
-          </p>
+          <p className="text-slate-400">Gerencie as informações da sua conta</p>
         </div>
         <div className="grid gap-6 lg:grid-cols-3">
           <Card className="lg:col-span-1 bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
@@ -42,8 +46,8 @@ export default function ProfileClient() {
                   <Camera className="h-4 w-4 text-emerald-400" />
                 </Button>
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="bg-slate-700/50 border-slate-600/50 text-slate-200 hover:bg-slate-600/50 hover:text-slate-200"
               >
                 Alterar Foto
@@ -63,7 +67,10 @@ export default function ProfileClient() {
             <CardContent className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-slate-200 flex items-center gap-2">
+                  <Label
+                    htmlFor="name"
+                    className="text-slate-200 flex items-center gap-2"
+                  >
                     <User className="h-4 w-4 text-slate-400" />
                     Nome
                   </Label>
@@ -74,7 +81,10 @@ export default function ProfileClient() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-200 flex items-center gap-2">
+                  <Label
+                    htmlFor="email"
+                    className="text-slate-200 flex items-center gap-2"
+                  >
                     <Mail className="h-4 w-4 text-slate-400" />
                     Email
                   </Label>
@@ -101,7 +111,10 @@ export default function ProfileClient() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="birthdate" className="text-slate-200 flex items-center gap-2">
+                  <Label
+                    htmlFor="birthdate"
+                    className="text-slate-200 flex items-center gap-2"
+                  >
                     <Calendar className="h-4 w-4 text-slate-400" />
                     Data de Nascimento
                   </Label>
@@ -128,45 +141,50 @@ export default function ProfileClient() {
               Gerencie a segurança da sua conta
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+          <CardContent>
+            <form className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="current-password" className="text-slate-200">
+                    Senha Atual
+                  </Label>
+                  <Input
+                    id="current-password"
+                    autoComplete="current-password"
+                    type="password"
+                    className="bg-slate-700/50 border-slate-600/50 text-slate-200 focus:border-emerald-500/50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password" className="text-slate-200">
+                    Nova Senha
+                  </Label>
+                  <Input
+                    id="new-password"
+                    autoComplete="new-password"
+                    type="password"
+                    className="bg-slate-700/50 border-slate-600/50 text-slate-200 focus:border-emerald-500/50"
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="current-password" className="text-slate-200">
-                  Senha Atual
+                <Label htmlFor="confirm-password" className="text-slate-200">
+                  Confirmar Nova Senha
                 </Label>
                 <Input
-                  id="current-password"
+                  id="confirm-password"
+                  autoComplete="new-password"
                   type="password"
                   className="bg-slate-700/50 border-slate-600/50 text-slate-200 focus:border-emerald-500/50"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-password" className="text-slate-200">
-                  Nova Senha
-                </Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  className="bg-slate-700/50 border-slate-600/50 text-slate-200 focus:border-emerald-500/50"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password" className="text-slate-200">
-                Confirmar Nova Senha
-              </Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                className="bg-slate-700/50 border-slate-600/50 text-slate-200 focus:border-emerald-500/50"
-              />
-            </div>
-            <Button 
-              variant="outline" 
-              className="bg-slate-700/50 border-slate-600/50 text-slate-200 hover:bg-slate-600/50"
-            >
-              Alterar Senha
-            </Button>
+              <Button
+                variant="outline"
+                className="bg-slate-700/50 border-slate-600/50 text-slate-200 hover:bg-slate-600/50"
+              >
+                Alterar Senha
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>

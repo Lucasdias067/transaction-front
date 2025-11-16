@@ -73,13 +73,9 @@ const columns = [
 export function TransactionsTable() {
   const { transactionsResults, setPage, setPerPage } = useTransactionsContext()
 
-  if (!transactionsResults) {
-    return <TransactionsSkeleton />
-  }
-
-  const currentPage = transactionsResults.meta.currentPage
-  const itemsPerPage = transactionsResults.meta.perPage
-  const totalItems = transactionsResults.meta?.total || 0
+  const currentPage = transactionsResults?.meta.currentPage || 1
+  const itemsPerPage = transactionsResults?.meta.perPage || 10
+  const totalItems = transactionsResults?.meta?.total || 0
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
   const pageNumbersToDisplay = useMemo(() => {
@@ -92,6 +88,10 @@ export function TransactionsTable() {
 
     return pages
   }, [currentPage, totalPages])
+
+  if (!transactionsResults) {
+    return <TransactionsSkeleton />
+  }
 
   return (
     <div className="max-w-7xl mx-auto mb-16">
