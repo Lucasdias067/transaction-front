@@ -11,11 +11,14 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { UploadAvatarModal } from '@/features/users/UploadAvatarModal'
 import { Calendar, Camera, Mail, User } from 'lucide-react'
 import { useSession } from 'next-auth/react'
+import { useState } from 'react'
 
 export default function ProfileClient() {
   const { data: session } = useSession()
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 sm:p-8">
@@ -49,6 +52,7 @@ export default function ProfileClient() {
               <Button
                 variant="outline"
                 className="bg-slate-700/50 border-slate-600/50 text-slate-200 hover:bg-slate-600/50 hover:text-slate-200"
+                onClick={() => setIsUploadModalOpen(true)}
               >
                 Alterar Foto
               </Button>
@@ -188,6 +192,12 @@ export default function ProfileClient() {
           </CardContent>
         </Card>
       </div>
+
+      <UploadAvatarModal
+        open={isUploadModalOpen}
+        onOpenChange={setIsUploadModalOpen}
+        userId={session?.user?.id || ''}
+      />
     </div>
   )
 }

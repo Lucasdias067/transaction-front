@@ -14,13 +14,13 @@ export default async function ProfilePage() {
     redirect('/sign-in')
   }
 
-  const { text } = await generateText({
-    model: 'openai/gpt-5-nano',
-    prompt:
-      'Escreva uma breve descrição sobre gerenciamento de finanças pessoais.'
-  })
+  // const { text } = await generateText({
+  //   model: 'openai/gpt-5-nano',
+  //   prompt:
+  //     'Escreva uma breve descrição sobre gerenciamento de finanças pessoais.'
+  // })
 
-  console.log('Response:', { text })
+  // console.log('Response:', { text })
 
   return (
     <main>
