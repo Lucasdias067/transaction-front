@@ -1,6 +1,5 @@
 name: Build e Push Manual (Docker)
 
-# Aqui definimos que só roda quando você clicar no botão
 on:
   workflow_dispatch:
     inputs:
@@ -10,30 +9,59 @@ on:
         default: 'latest'
 
 jobs:
+  # JOB 1: Roda na Microsoft (Cria a imagem)
   build-push:
-    runs-on: ubuntu-latest # O GitHub empresta uma máquina Linux pra gente
-
+    runs-on: ubuntu-latest
     steps:
-      # Passo 1: Baixar o código do seu repositório
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      # Passo 2: Logar no Docker Hub usando as senhas do Passo 2
       - name: Login no Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Passo 3: Configurar o Docker Buildx (Ferramenta avançada de build)
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # Passo 4: Criar a imagem e mandar para o Hub
       - name: Build e Push
         uses: docker/build-push-action@v4
         with:
-          context: . # Onde está o Dockerfile? (Ponto = raiz)
+          context: .
           push: true
-          # Substitua 'seu-usuario/seu-repo' pelo nome real do seu repo no Docker Hub
+          # Usamos a tag que você digitar no input
           tags: lucasdias067/my-private-repository:${{ inputs.version }}
+
+  # JOB 2: Roda na Sua Casa (Sobe o container)
+  deploy-local:
+    needs: build-push        # Só roda se o Job 1 der certo
+    runs-on: self-hosted     # <--- Mágica: Roda no seu container github-runner
+    
+    # Define variáveis de ambiente para o docker-compose usar
+    env:
+      IMAGE_TAG: ${{ inputs.version }}
+      
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+        # O runner baixa o docker-compose.yml mais novo do seu repo
+
+      - name: Login no Docker Hub (Necessário pois o repo é privado)
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Atualizar Aplicação
+        run: |
+          # 1. Garante que baixamos a imagem nova que acabou de ser criada
+          docker compose pull
+          
+          # 2. Sobe o container (recriando se mudou algo)
+          # O comando -d libera o terminal
+          # O --remove-orphans limpa containers velhos que não estão mais no arquivo
+          docker compose up -d --remove-orphans
+          
+          # 3. Limpeza de disco (opcional) - remove imagens antigas sem uso
+          docker image prune -f
