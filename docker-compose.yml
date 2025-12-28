@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: lucasdias067/my-private-repository:${IMAGE_TAG:-latest}
     container_name: finance-management-front
     ports:
       - "3000:3000"
@@ -12,14 +13,13 @@ services:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-jwt}
       - AI_GATEWAY_API_KEY=${AI_GATEWAY_API_KEY}
       - NEXT_PUBLIC_AVATAR_URL=${NEXT_PUBLIC_AVATAR_URL}
-    env_file:
-      - .env.local
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
     networks:
-      - finance-network
+      - public_network
 
 networks:
-  finance-network:
-    driver: bridge
+  public_network:
+    external: true
+
