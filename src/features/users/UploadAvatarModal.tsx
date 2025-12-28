@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Upload } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface UploadAvatarModalProps {
   open: boolean
@@ -51,13 +52,12 @@ export function UploadAvatarModal({
       const formData = new FormData()
       formData.append('avatar', selectedFile)
 
-      const { avatarUrl } = await uploadUserAvatar({
+      const { url, message } = await uploadUserAvatar({
         id: userId,
         data: formData
       })
 
-      console.log('Upload realizado:', selectedFile.name)
-      console.log('URL do avatar:', avatarUrl)
+      toast.success('Foto de perfil atualizada com sucesso!')
 
       onOpenChange(false)
       setSelectedFile(null)

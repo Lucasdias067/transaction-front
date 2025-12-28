@@ -14,11 +14,32 @@ import { Label } from '@/components/ui/label'
 import { UploadAvatarModal } from '@/features/users/UploadAvatarModal'
 import { Calendar, Camera, Mail, User } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { io } from 'socket.io-client'
+import { toast } from 'sonner'
+
+const socket = io(process.env.NEXT_PUBLIC_API_URL)
 
 export default function ProfileClient() {
   const { data: session } = useSession()
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Connected to WebSocket server')
+      socket.emit('JoinAdminRoom', session?.user?.id)
+    })
+
+    socket.on('transaction-created', () => {
+      console.log('Transaction created')
+      toast.success('Nova transação criada!')
+    })
+
+    return () => {
+      socket.off('connect')
+      socket.off('transaction-created')
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 sm:p-8">
@@ -37,9 +58,14 @@ export default function ProfileClient() {
             <CardContent className="flex flex-col items-center space-y-4">
               <div className="relative">
                 <Avatar className="h-32 w-32 border-4 border-slate-600/60 shadow-lg">
-                  <AvatarImage src={''} />
+                  <AvatarImage
+                    src={
+                      `${process.env.NEXT_PUBLIC_AVATAR_URL}${session?.user?.avatar || ''}` ||
+                      ''
+                    }
+                  />
                   <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 text-emerald-300 border border-emerald-500/20">
-                    {session?.user?.name?.[0]?.toUpperCase() ?? '?'}
+                    {session?.user?.name?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <Button
