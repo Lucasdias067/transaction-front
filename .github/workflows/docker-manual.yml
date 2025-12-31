@@ -44,7 +44,7 @@ jobs:
   # JOB 2: Roda na Sua Casa (Sobe o container)
   deploy-local:
     needs: build-push        
-    runs-on: self-hosted     # <--- Mágica: Roda no seu container github-runner
+    runs-on: [self-hosted, Linux, X64]     # <--- Mágica: Roda no seu container github-runner
     env:
       IMAGE_TAG: ${{ inputs.version }}
       OWNER_REPO: ${{ github.repository_owner }}
@@ -72,3 +72,4 @@ jobs:
           docker compose pull
           docker compose up -d --remove-orphans
           docker image prune -f
+
