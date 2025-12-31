@@ -15,12 +15,17 @@ jobs:
     steps:
       - name: Checkout do código
         uses: actions/checkout@v3
-
-      - name: Login no Docker Hub
+      # - name: Login no Docker Hub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login no GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PASSWORD }}
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -30,38 +35,40 @@ jobs:
         with:
           context: .
           push: true
-          # Usamos a tag que você digitar no input
-          tags: lucasdias067/my-private-repository:${{ inputs.version }}
+          tags: ghcr.io/${{ github.repository_owner }}/finance-app:${{ inputs.version }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_AVATAR_URL=${{ vars.NEXT_PUBLIC_AVATAR_URL }}
+            NEXT_PUBLIC_BASE_PATH=${{ vars.NEXT_PUBLIC_BASE_PATH }}
 
   # JOB 2: Roda na Sua Casa (Sobe o container)
   deploy-local:
-    needs: build-push        # Só roda se o Job 1 der certo
+    needs: build-push        
     runs-on: self-hosted     # <--- Mágica: Roda no seu container github-runner
-    
-    # Define variáveis de ambiente para o docker-compose usar
     env:
       IMAGE_TAG: ${{ inputs.version }}
+      OWNER_REPO: ${{ github.repository_owner }}
+      NEXTAUTH_URL: ${{ vars.NEXTAUTH_URL }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
       
     steps:
       - name: Checkout do código
         uses: actions/checkout@v3
-        # O runner baixa o docker-compose.yml mais novo do seu repo
-
-      - name: Login no Docker Hub (Necessário pois o repo é privado)
+      # - name: Login no Docker Hub (Necessário pois o repo é privado)
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login no GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PASSWORD }} # Usando o Token Clássico
 
       - name: Atualizar Aplicação
         run: |
-          # 1. Garante que baixamos a imagem nova que acabou de ser criada
           docker compose pull
-          
-          # 2. Sobe o container (recriando se mudou algo)
-          # O comando -d libera o terminal
-          # O --remove-orphans limpa containers velhos que não estão mais no arquivo
           docker compose up -d --remove-orphans
-          
-          # 3. Limpeza de disco (opcional) - remove imagens antigas sem uso
           docker image prune -f
